@@ -23,8 +23,17 @@ def get_combined_race_data():
     if races is None or results is None or drivers is None:
         return None
 
+    # Merge Results with Races
     merged = pd.merge(results, races, on='raceId', suffixes=('_result', '_race'))
+
+    # Merge with Drivers
     merged = pd.merge(merged, drivers, on='driverId', suffixes=('', '_driver'))
+
+    # Null handling and type coercion
+    merged['points'] = pd.to_numeric(merged['points'], errors='coerce').fillna(0)
+    merged['positionOrder'] = pd.to_numeric(merged['positionOrder'], errors='coerce')
+    merged['grid'] = pd.to_numeric(merged['grid'], errors='coerce')
+    merged.dropna(subset=['positionOrder'], inplace=True)
 
     return merged
 
