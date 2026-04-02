@@ -37,43 +37,86 @@ page = st.sidebar.radio("Go to", [
     "⛈️ THE PERFECT STORM"
 ])
 
+# --- Global Filters (placeholder — filters wired in later) ---
 st.sidebar.markdown("---")
-st.sidebar.info("🔍 Global filters coming soon.")
+with st.sidebar.expander("🔍 Global Filters", expanded=False):
+    _races_meta = data_loader.load_data('races.csv')
+    _all_years = sorted(_races_meta['year'].unique().tolist()) if _races_meta is not None else list(range(1950, 2024))
+    year_range = st.select_slider("Year Range", options=_all_years, value=(_all_years[0], _all_years[-1]))
+    selected_drivers_global = []
+    selected_teams_global = []
+    selected_circuits_global = []
+    st.caption("ℹ️ More filters coming soon.")
 
-# Page routing — content to be added per page
+# Page routing
 if page == "Home":
-    st.write("Home page — coming soon.")
+    st.write("### Welcome to the Formula 1 History Analyzer")
+    st.info("Select a page from the sidebar to begin exploring.")
+
 elif page == "Evolution of Speed":
-    st.write("Evolution of Speed — coming soon.")
+    st.header("🏎️ The Evolution of Speed")
+    st.write("Coming soon — data loading in progress.")
+
 elif page == "Dominance Dynasties":
-    st.write("Dominance Dynasties — coming soon.")
+    st.header("🏆 Dominance Dynasties")
+    st.write("Coming soon.")
+
 elif page == "Geography of Victory":
-    st.write("Geography of Victory — coming soon.")
+    st.header("🌍 The Geography of Victory")
+    st.write("Coming soon.")
+
 elif page == "Advanced: Quali vs Race":
-    st.write("Quali vs Race — coming soon.")
+    st.header("🚦 Qualifying Merchants vs. Race Monsters")
+    st.write("Coming soon.")
+
 elif page == "Advanced: Reliability":
-    st.write("Reliability — coming soon.")
+    st.header("☠️ The Graveyard of Gears")
+    st.write("Coming soon.")
+
 elif page == "Advanced: Teammate Wars":
-    st.write("Teammate Wars — coming soon.")
+    st.header("⚔️ Teammate Killers")
+    st.write("Coming soon.")
+
 elif page == "🏆 Championship Battle":
-    st.write("Championship Battle — coming soon.")
+    st.header("🏆 Championship Battle")
+    st.write("Coming soon.")
+
 elif page == "⚡ Sprint Races":
-    st.write("Sprint Races — coming soon.")
+    st.header("⚡ Sprint Races")
+    st.write("Coming soon.")
+
 elif page == "THE WINNING FORMULA 🏆":
-    st.write("The Winning Formula — coming soon.")
+    st.header("🏆 The Winning Formula")
+    st.write("Coming soon.")
+
 elif page == "🎯 THE UNDERDOG EFFECT":
-    st.write("The Underdog Effect — coming soon.")
+    st.header("🎯 The Underdog Effect")
+    st.write("Coming soon.")
+
 elif page == "⚰️ THE CONSTRUCTOR'S CURSE":
-    st.write("The Constructor's Curse — coming soon.")
+    st.header("⚰️ The Constructor's Curse")
+    st.write("Coming soon.")
+
 elif page == "🧒 THE ROOKIE PARADOX":
-    st.write("The Rookie Paradox — coming soon.")
+    st.header("🧒 The Rookie Paradox")
+    st.write("Coming soon.")
+
 elif page == "🏎️ THE CIRCUIT DNA":
-    st.write("Circuit DNA — coming soon.")
+    st.header("🏎️ The Circuit DNA")
+    st.write("Coming soon.")
+
 elif page == "💰 THE MILLION DOLLAR LAP":
-    st.write("The Million Dollar Lap — coming soon.")
+    st.header("💰 The Million Dollar Lap")
+    st.write("Coming soon.")
+
 elif page == "🦋 THE BUTTERFLY EFFECT":
-    st.write("The Butterfly Effect — coming soon.")
+    st.header("🦋 The Butterfly Effect")
+    st.write("Coming soon.")
+
 elif page == "🌈 THE RAINBOW ROAD":
-    st.write("The Rainbow Road — coming soon.")
+    st.header("🌈 The Rainbow Road")
+    st.write("Coming soon.")
+
 elif page == "⛈️ THE PERFECT STORM":
-    st.write("The Perfect Storm — coming soon.")
+    st.header("⛈️ The Perfect Storm")
+    st.write("Coming soon.")
