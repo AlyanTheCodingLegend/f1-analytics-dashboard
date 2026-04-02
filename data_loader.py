@@ -37,6 +37,41 @@ def get_combined_race_data():
 
     return merged
 
+def get_speed_data():
+    races = load_data('races.csv')
+    results = load_data('results.csv')
+    circuits = load_data('circuits.csv')
+
+    if races is None or results is None or circuits is None:
+        return None
+
+    race_results = pd.merge(results, races[['raceId', 'year', 'circuitId', 'name']], on='raceId')
+    full_data = pd.merge(race_results, circuits[['circuitId', 'name', 'location', 'country']], on='circuitId', suffixes=('_race', '_circuit'))
+
+    full_data['fastestLapSpeed'] = pd.to_numeric(full_data['fastestLapSpeed'], errors='coerce')
+    speed_data = full_data.dropna(subset=['fastestLapSpeed'])
+
+    return speed_data
+
+def get_dominance_data():
+    races = load_data('races.csv')
+    results = load_data('results.csv')
+    constructors = load_data('constructors.csv')
+
+    if races is None or results is None or constructors is None:
+        return None
+
+    race_results = pd.merge(results, races[['raceId', 'year']], on='raceId')
+    full_data = pd.merge(race_results, constructors[['constructorId', 'name']], on='constructorId', suffixes=('_race', '_const'))
+
+    yearly_points = full_data.groupby(['year', 'name'])['points'].sum().reset_index()
+    yearly_totals = yearly_points.groupby('year')['points'].sum().reset_index().rename(columns={'points': 'total_year_points'})
+
+    merged_points = pd.merge(yearly_points, yearly_totals, on='year')
+    merged_points['points_share'] = (merged_points['points'] / merged_points['total_year_points']) * 100
+
+    return merged_points
+
 def get_seasons_overview():
     seasons = load_data('seasons.csv')
     races = load_data('races.csv')
