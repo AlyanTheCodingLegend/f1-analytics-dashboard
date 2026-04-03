@@ -57,6 +57,25 @@ if page == "Home":
     st.markdown("- **The Geography of Victory**: Where champions come from and where they win.")
     st.info("Select a page from the sidebar to begin exploring.")
 
+    # Dataset overview using seasons.csv
+    overview = data_loader.get_seasons_overview()
+    if overview is not None:
+        st.markdown("---")
+        st.subheader("📊 Dataset at a Glance")
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Seasons", overview['total_seasons'],
+                  f"{overview['year_range'][0]}–{overview['year_range'][1]}")
+        c2.metric("Races", overview['total_races'])
+        c3.metric("Drivers", overview['total_drivers'])
+        c4.metric("Circuits", overview['total_circuits'])
+
+        st.subheader("F1 Calendar Growth")
+        fig_cal = px.line(overview['races_per_year'], x='year', y='race_count',
+                          title="Number of Races per Season",
+                          labels={'race_count': 'Races', 'year': 'Year'},
+                          markers=True)
+        st.plotly_chart(fig_cal, width="stretch")
+
 elif page == "Evolution of Speed":
     st.header("🏎️ The Evolution of Speed")
     st.write("Coming soon — data loading in progress.")
