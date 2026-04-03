@@ -51,6 +51,10 @@ with st.sidebar.expander("🔍 Global Filters", expanded=False):
 # Page routing
 if page == "Home":
     st.write("### Welcome to the Formula 1 History Analyzer")
+    st.write("This dashboard explores the rich history of F1 through three key lenses:")
+    st.markdown("- **The Evolution of Speed**: How cars and circuits have changed.")
+    st.markdown("- **Dominance Dynasties**: The rise and fall of great teams.")
+    st.markdown("- **The Geography of Victory**: Where champions come from and where they win.")
     st.info("Select a page from the sidebar to begin exploring.")
 
 elif page == "Evolution of Speed":
