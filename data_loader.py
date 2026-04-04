@@ -15,6 +15,7 @@ def load_data(filename):
         st.error(f"File not found: {file_path}")
         return None
 
+@st.cache_data
 def get_combined_race_data():
     races = load_data('races.csv')
     results = load_data('results.csv')
@@ -72,6 +73,7 @@ def get_dominance_data():
 
     return merged_points
 
+@st.cache_data
 def get_seasons_overview():
     seasons = load_data('seasons.csv')
     races = load_data('races.csv')
