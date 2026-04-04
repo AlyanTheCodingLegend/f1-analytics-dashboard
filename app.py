@@ -78,7 +78,35 @@ if page == "Home":
 
 elif page == "Evolution of Speed":
     st.header("🏎️ The Evolution of Speed")
-    st.write(f"Showing data from {year_range[0]} to {year_range[1]}. Full charts coming soon.")
+    st.write("Does F1 really get faster every year? Let's analyze the `fastestLapSpeed` recorded in races over the decades.")
+
+    speed_df = data_loader.get_speed_data()
+
+    if speed_df is not None:
+        speed_df = speed_df[(speed_df['year'] >= year_range[0]) & (speed_df['year'] <= year_range[1])]
+        if selected_circuits_global:
+            speed_df = speed_df[speed_df['name_circuit'].isin(selected_circuits_global)]
+
+        st.subheader("Global Trend: Fastest Lap Speeds over Time")
+        max_speed_per_year = speed_df.groupby('year')['fastestLapSpeed'].max().reset_index()
+        fig_trend = px.line(max_speed_per_year, x='year', y='fastestLapSpeed',
+                            title='Maximum Race Lap Speed Recorded by Year (km/h)',
+                            markers=True, labels={'fastestLapSpeed': 'Speed (km/h)'})
+        st.plotly_chart(fig_trend, width="stretch")
+        st.markdown("**Observation:** Notice the dips? These often correlate with regulation changes (e.g., V10 to V8 engines, aero restrictions).")
+
+        st.subheader("Circuit Specific Analysis")
+        st.write("Compare speeds on specific tracks to verify if cars are getting faster on the same tarmac.")
+        selected_circuits = st.multiselect("Select Circuits to Compare", speed_df['name_circuit'].unique(), default=['Circuit de Monaco', 'Autodromo Nazionale di Monza', 'Silverstone Circuit'])
+        filtered_df = speed_df[speed_df['name_circuit'].isin(selected_circuits)]
+        circuit_yearly_max = filtered_df.groupby(['year', 'name_circuit'])['fastestLapSpeed'].max().reset_index()
+        fig_circuit = px.scatter(circuit_yearly_max, x='year', y='fastestLapSpeed', color='name_circuit',
+                                 title='Max Speed Evolution by Circuit',
+                                 trendline="lowess",
+                                 labels={'fastestLapSpeed': 'Speed (km/h)'})
+        st.plotly_chart(fig_circuit, width="stretch")
+    else:
+        st.error("failed to load data")
 
 elif page == "Dominance Dynasties":
     st.header("🏆 Dominance Dynasties")
