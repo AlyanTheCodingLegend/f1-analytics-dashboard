@@ -78,7 +78,7 @@ if page == "Home":
 
 elif page == "Evolution of Speed":
     st.header("🏎️ The Evolution of Speed")
-    st.write("Coming soon — data loading in progress.")
+    st.write(f"Showing data from {year_range[0]} to {year_range[1]}. Full charts coming soon.")
 
 elif page == "Dominance Dynasties":
     st.header("🏆 Dominance Dynasties")
