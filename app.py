@@ -129,8 +129,67 @@ elif page == "Advanced: Teammate Wars":
     st.write("Coming soon.")
 
 elif page == "🏆 Championship Battle":
-    st.header("🏆 Championship Battle")
-    st.write("Coming soon.")
+    st.header("🏆 Championship Battle: Season Standings Evolution")
+    st.write("Watch how the Drivers' World Championship unfolded race by race, using the official standings data.")
+
+    standings_df = data_loader.get_driver_standings_evolution()
+
+    if standings_df is not None:
+        available_years = sorted(
+            [y for y in standings_df['year'].unique() if year_range[0] <= y <= year_range[1]],
+            reverse=True
+        )
+        if not available_years:
+            st.warning("No data for the selected year range. Adjust the Global Filters.")
+        else:
+            selected_year = st.selectbox("Select Season", available_years)
+            year_data = standings_df[standings_df['year'] == selected_year].copy()
+
+            if selected_drivers_global:
+                year_data = year_data[year_data['surname'].isin(selected_drivers_global)]
+
+            top_drivers = year_data.groupby('surname')['points'].max().nlargest(10).index.tolist()
+            plot_data = year_data[year_data['surname'].isin(top_drivers)]
+
+            st.subheader("Points Race: Round by Round")
+            fig_battle = px.line(plot_data, x='round', y='points', color='surname',
+                                 title=f"{selected_year} Drivers' Championship — Standings After Each Race",
+                                 labels={'points': 'Cumulative Points', 'round': 'Race Round', 'surname': 'Driver'},
+                                 markers=True)
+            st.plotly_chart(fig_battle, width="stretch")
+            st.info("💡 Each point represents the standings *after* that race. Lines crossing = lead changes!")
+
+            st.subheader("Final Season Standings")
+            final = year_data.groupby('surname')['points'].max().reset_index()
+            final = final.sort_values('points', ascending=False).head(15)
+            fig_final = px.bar(final, x='surname', y='points',
+                               title=f"{selected_year} Final Driver Standings (Top 15)",
+                               labels={'points': 'Championship Points', 'surname': 'Driver'},
+                               color='points', color_continuous_scale='Plasma')
+            st.plotly_chart(fig_final, width="stretch")
+
+            st.subheader("Race Wins Tally")
+            wins_data = year_data.groupby('surname')['wins'].max().reset_index()
+            wins_data = wins_data[wins_data['wins'] > 0].sort_values('wins', ascending=False)
+            if not wins_data.empty:
+                fig_wins = px.bar(wins_data, x='surname', y='wins',
+                                  title=f"{selected_year} Race Wins",
+                                  labels={'wins': 'Wins', 'surname': 'Driver'},
+                                  color='wins', color_continuous_scale='Reds')
+                st.plotly_chart(fig_wins, width="stretch")
+
+            st.subheader("Gap to Championship Leader")
+            leader_points = plot_data.groupby('round')['points'].max().reset_index().rename(columns={'points': 'leader_pts'})
+            gap_data = pd.merge(plot_data, leader_points, on='round')
+            gap_data['gap'] = gap_data['leader_pts'] - gap_data['points']
+            fig_gap = px.line(gap_data, x='round', y='gap', color='surname',
+                              title=f"{selected_year} Points Gap to Championship Leader",
+                              labels={'gap': 'Points Behind Leader', 'round': 'Race Round', 'surname': 'Driver'},
+                              markers=True)
+            st.plotly_chart(fig_gap, width="stretch")
+            st.info("💡 Closer to zero = closer to the title.")
+    else:
+        st.error("Could not load Championship Battle data.")
 
 elif page == "⚡ Sprint Races":
     st.header("⚡ Sprint Races")
