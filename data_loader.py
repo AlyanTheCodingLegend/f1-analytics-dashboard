@@ -73,6 +73,34 @@ def get_dominance_data():
 
     return merged_points
 
+def get_driver_standings_evolution():
+    standings = load_data('driver_standings.csv')
+    races = load_data('races.csv')
+    drivers = load_data('drivers.csv')
+
+    if any(df is None for df in [standings, races, drivers]):
+        return None
+
+    merged = pd.merge(standings, races[['raceId', 'year', 'round', 'name']], on='raceId')
+    merged = pd.merge(merged, drivers[['driverId', 'surname', 'code', 'nationality']], on='driverId')
+    merged['points'] = pd.to_numeric(merged['points'], errors='coerce').fillna(0)
+    merged['wins'] = pd.to_numeric(merged['wins'], errors='coerce').fillna(0)
+    return merged
+
+def get_constructor_results_data():
+    con_results = load_data('constructor_results.csv')
+    races = load_data('races.csv')
+    constructors = load_data('constructors.csv')
+
+    if any(df is None for df in [con_results, races, constructors]):
+        return None
+
+    con_results['points'] = pd.to_numeric(con_results['points'], errors='coerce').fillna(0)
+    merged = pd.merge(con_results, races[['raceId', 'year', 'round', 'name']], on='raceId')
+    merged = pd.merge(merged, constructors[['constructorId', 'name']], on='constructorId',
+                      suffixes=('_race', '_team'))
+    return merged
+
 @st.cache_data
 def get_seasons_overview():
     seasons = load_data('seasons.csv')
