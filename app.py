@@ -69,11 +69,12 @@ if page == "Home":
         c3.metric("Drivers", overview['total_drivers'])
         c4.metric("Circuits", overview['total_circuits'])
 
-        st.subheader("F1 Calendar Growth")
+        st.subheader("📅 F1 Calendar Growth Over the Decades")
         fig_cal = px.line(overview['races_per_year'], x='year', y='race_count',
-                          title="Number of Races per Season",
+                          title="Number of Races per Season (1950–2023)",
                           labels={'race_count': 'Races', 'year': 'Year'},
                           markers=True)
+        fig_cal.update_traces(line_color='#e10600')
         st.plotly_chart(fig_cal, width="stretch")
 
 elif page == "Evolution of Speed":
