@@ -107,7 +107,7 @@ elif page == "Evolution of Speed":
                                  labels={'fastestLapSpeed': 'Speed (km/h)'})
         st.plotly_chart(fig_circuit, width="stretch")
     else:
-        st.error("failed to load data")
+        st.error("Failed to load speed data. Please check the dataset.")
 
 elif page == "Dominance Dynasties":
     st.header("🏆 Dominance Dynasties")
