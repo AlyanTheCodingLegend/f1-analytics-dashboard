@@ -46,7 +46,7 @@ with st.sidebar.expander("🔍 Global Filters", expanded=False):
     selected_drivers_global = []
     selected_teams_global = []
     selected_circuits_global = []
-    st.caption("ℹ️ Year filter active. Driver/team/circuit filters coming in Sprint 2.")
+    st.caption("ℹ️ Year filter applies to Evolution of Speed and Championship Battle.")
 
 # Page routing
 if page == "Home":
