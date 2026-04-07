@@ -188,7 +188,7 @@ elif page == "🏆 Championship Battle":
                               labels={'gap': 'Points Behind Leader', 'round': 'Race Round', 'surname': 'Driver'},
                               markers=True)
             st.plotly_chart(fig_gap, width="stretch")
-            st.info("💡 Closer to zero = closer to the title.")
+            st.info("💡 Closer to zero = closer to the title. Zero = leading the championship at that point.")
     else:
         st.error("Could not load Championship Battle data.")
 
