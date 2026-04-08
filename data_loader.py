@@ -73,6 +73,29 @@ def get_dominance_data():
 
     return merged_points
 
+def get_unified_data():
+    """
+    Builds the Master DataFrame for 'The Winning Formula' analysis.
+    Scaffold — full implementation in progress.
+    """
+    results = load_data('results.csv')
+    races = load_data('races.csv')
+    drivers = load_data('drivers.csv')
+    constructors = load_data('constructors.csv')
+
+    if any(df is None for df in [results, races, drivers, constructors]):
+        return None
+
+    base = pd.merge(results, races[['raceId', 'year', 'name', 'circuitId']], on='raceId', suffixes=('_res', '_race'))
+    base = pd.merge(base, drivers[['driverId', 'code', 'surname', 'nationality']], on='driverId')
+    base = pd.merge(base, constructors[['constructorId', 'name']], on='constructorId', suffixes=('_driver', '_team'))
+    base = base[base['year'] >= 2011].copy()
+
+    base['Win'] = base['positionOrder'].apply(lambda x: 1 if x == 1 else 0)
+    base['Podium'] = base['positionOrder'].apply(lambda x: 1 if x <= 3 else 0)
+
+    return base
+
 def get_quali_vs_race_data():
     """
     Prepares data for 'Qualifying Merchants vs Race Monsters'.
