@@ -41,12 +41,16 @@ page = st.sidebar.radio("Go to", [
 st.sidebar.markdown("---")
 with st.sidebar.expander("🔍 Global Filters", expanded=False):
     _races_meta = data_loader.load_data('races.csv')
+    _drivers_meta = data_loader.load_data('drivers.csv')
     _all_years = sorted(_races_meta['year'].unique().tolist()) if _races_meta is not None else list(range(1950, 2024))
     year_range = st.select_slider("Year Range", options=_all_years, value=(_all_years[0], _all_years[-1]))
-    selected_drivers_global = []
+
+    _driver_opts = sorted(_drivers_meta['surname'].dropna().unique().tolist()) if _drivers_meta is not None else []
+    selected_drivers_global = st.multiselect("Drivers", _driver_opts,
+                                             help="Leave empty to include all drivers")
     selected_teams_global = []
     selected_circuits_global = []
-    st.caption("ℹ️ Year filter applies to Evolution of Speed and Championship Battle.")
+    st.caption("ℹ️ Year and driver filters active.")
 
 # Page routing
 if page == "Home":
