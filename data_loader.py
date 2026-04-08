@@ -73,6 +73,35 @@ def get_dominance_data():
 
     return merged_points
 
+def get_quali_vs_race_data():
+    """
+    Prepares data for 'Qualifying Merchants vs Race Monsters'.
+    """
+    results = load_data('results.csv')
+    drivers = load_data('drivers.csv')
+
+    if results is None or drivers is None:
+        return None
+
+    merged = pd.merge(results, drivers[['driverId', 'code', 'surname']], on='driverId')
+
+    counts = merged['driverId'].value_counts()
+    experienced_drivers = counts[counts > 50].index
+
+    filtered = merged[merged['driverId'].isin(experienced_drivers)].copy()
+    filtered = filtered[filtered['grid'] > 0]
+
+    stats = filtered.groupby(['driverId', 'code', 'surname']).agg({
+        'grid': 'mean',
+        'positionOrder': 'mean',
+        'raceId': 'count'
+    }).reset_index()
+
+    stats.columns = ['driverId', 'code', 'surname', 'avg_grid', 'avg_finish', 'races']
+    stats['net_gain'] = stats['avg_grid'] - stats['avg_finish']
+
+    return stats
+
 def get_driver_standings_evolution():
     standings = load_data('driver_standings.csv')
     races = load_data('races.csv')
