@@ -54,7 +54,7 @@ with st.sidebar.expander("🔍 Global Filters", expanded=False):
     selected_teams_global = st.multiselect("Teams / Constructors", _team_opts,
                                            help="Leave empty to include all teams")
     selected_circuits_global = []
-    st.caption("ℹ️ Year, driver, and team filters active.")
+    st.caption("ℹ️ Filters apply to pages that support them (Evolution of Speed, Dominance Dynasties, Championship Battle, Sprint Races).")
 
 # Page routing
 if page == "Home":
