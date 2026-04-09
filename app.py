@@ -43,8 +43,11 @@ with st.sidebar.expander("🔍 Global Filters", expanded=False):
     _races_meta = data_loader.load_data('races.csv')
     _drivers_meta = data_loader.load_data('drivers.csv')
     _constructors_meta = data_loader.load_data('constructors.csv')
+    _circuits_meta = data_loader.load_data('circuits.csv')
+
     _all_years = sorted(_races_meta['year'].unique().tolist()) if _races_meta is not None else list(range(1950, 2024))
-    year_range = st.select_slider("Year Range", options=_all_years, value=(_all_years[0], _all_years[-1]))
+    year_range = st.select_slider("Year Range", options=_all_years,
+                                  value=(_all_years[0], _all_years[-1]))
 
     _driver_opts = sorted(_drivers_meta['surname'].dropna().unique().tolist()) if _drivers_meta is not None else []
     selected_drivers_global = st.multiselect("Drivers", _driver_opts,
@@ -53,7 +56,11 @@ with st.sidebar.expander("🔍 Global Filters", expanded=False):
     _team_opts = sorted(_constructors_meta['name'].dropna().unique().tolist()) if _constructors_meta is not None else []
     selected_teams_global = st.multiselect("Teams / Constructors", _team_opts,
                                            help="Leave empty to include all teams")
-    selected_circuits_global = []
+
+    _circuit_opts = sorted(_circuits_meta['name'].dropna().unique().tolist()) if _circuits_meta is not None else []
+    selected_circuits_global = st.multiselect("Circuits", _circuit_opts,
+                                              help="Leave empty to include all circuits")
+
     st.caption("ℹ️ Filters apply to pages that support them (Evolution of Speed, Dominance Dynasties, Championship Battle, Sprint Races).")
 
 # Page routing
