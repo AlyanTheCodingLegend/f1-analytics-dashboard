@@ -54,6 +54,7 @@ def get_speed_data():
 
     return speed_data
 
+@st.cache_data
 def get_dominance_data():
     races = load_data('races.csv')
     results = load_data('results.csv')
