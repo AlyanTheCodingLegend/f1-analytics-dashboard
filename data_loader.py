@@ -73,6 +73,44 @@ def get_dominance_data():
 
     return merged_points
 
+def get_teammate_comparison_data(driver1_code, driver2_code, constructor_name=None):
+    """
+    Compares two drivers when they were teammates.
+    """
+    results = load_data('results.csv')
+    drivers = load_data('drivers.csv')
+    constructors = load_data('constructors.csv')
+    races = load_data('races.csv')
+
+    d1 = drivers[drivers['code'] == driver1_code]
+    d2 = drivers[drivers['code'] == driver2_code]
+
+    if d1.empty or d2.empty:
+        return None
+
+    d1_id = d1.iloc[0]['driverId']
+    d2_id = d2.iloc[0]['driverId']
+
+    r1 = results[results['driverId'] == d1_id][['raceId', 'constructorId', 'points', 'positionOrder']]
+    r2 = results[results['driverId'] == d2_id][['raceId', 'constructorId', 'points', 'positionOrder']]
+
+    teammates = pd.merge(r1, r2, on=['raceId', 'constructorId'], suffixes=('_1', '_2'))
+    final_df = pd.merge(teammates, races[['raceId', 'year', 'name']], on='raceId')
+
+    stats = {
+        'd1_wins': len(final_df[final_df['positionOrder_1'] == 1]),
+        'd2_wins': len(final_df[final_df['positionOrder_2'] == 1]),
+        'd1_points': final_df['points_1'].sum(),
+        'd2_points': final_df['points_2'].sum(),
+        'd1_ahead': len(final_df[final_df['positionOrder_1'] < final_df['positionOrder_2']]),
+        'd2_ahead': len(final_df[final_df['positionOrder_2'] < final_df['positionOrder_1']]),
+        'races_together': len(final_df),
+        'd1_name': d1.iloc[0]['surname'],
+        'd2_name': d2.iloc[0]['surname']
+    }
+
+    return stats
+
 def get_unified_data():
     """
     Builds the Master DataFrame for 'The Winning Formula' analysis.
