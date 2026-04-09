@@ -134,7 +134,32 @@ elif page == "Geography of Victory":
 
 elif page == "Advanced: Quali vs Race":
     st.header("🚦 Qualifying Merchants vs. Race Monsters")
-    st.write("Coming soon.")
+    st.write("This chart exposes the truth: Who falls back on Sunday, and who comes alive? We compare Average Grid Position vs. Average Finishing Position for experienced drivers (>50 races).")
+
+    qvr_df = data_loader.get_quali_vs_race_data()
+
+    if qvr_df is not None:
+        fig_qvr = px.scatter(qvr_df, x='avg_grid', y='avg_finish',
+                             title="Avg Grid Position vs. Avg Finishing Position",
+                             labels={'avg_grid': 'Average Starting Position', 'avg_finish': 'Average Finishing Position', 'net_gain': 'Places Gained/Lost'},
+                             hover_name='surname', hover_data=['races', 'code'],
+                             color='net_gain',
+                             color_continuous_scale=px.colors.diverging.RdYlGn,
+                             color_continuous_midpoint=0)
+
+        min_val = min(qvr_df['avg_grid'].min(), qvr_df['avg_finish'].min())
+        max_val = max(qvr_df['avg_grid'].max(), qvr_df['avg_finish'].max())
+
+        fig_qvr.add_shape(type="line",
+            x0=min_val, y0=min_val, x1=max_val, y1=max_val,
+            line=dict(color="Red", width=2, dash="dash"),
+        )
+        fig_qvr.add_annotation(x=max_val-2, y=max_val-5, text="Race Monsters (Gain Places)", showarrow=False, font=dict(color="green"))
+        fig_qvr.add_annotation(x=max_val-5, y=max_val-2, text="Quali Merchants (Lose Places)", showarrow=False, font=dict(color="red"))
+        fig_qvr.update_yaxes(autorange="reversed")
+        fig_qvr.update_xaxes(autorange="reversed")
+        st.plotly_chart(fig_qvr, width="stretch")
+        st.markdown("**Interpretation**: Drivers below/left of the dashed line consistently improve their position on race day.")
 
 elif page == "Advanced: Reliability":
     st.header("☠️ The Graveyard of Gears")
