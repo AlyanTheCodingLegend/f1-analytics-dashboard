@@ -213,6 +213,38 @@ def get_constructor_results_data():
                       suffixes=('_race', '_team'))
     return merged
 
+def get_underdog_analysis():
+    """
+    Analyzes 'The Underdog Effect': Can strategy overcome poor qualifying?
+    """
+    base = get_unified_data()
+
+    if base is None:
+        return None
+
+    base['positions_gained'] = base['grid'] - base['positionOrder']
+    base['quali_deficit'] = base['quali_pos'] - 1
+
+    def categorize_grid(grid):
+        if grid <= 3:
+            return 'Front Row'
+        elif grid <= 10:
+            return 'Top 10'
+        elif grid <= 15:
+            return 'Midfield'
+        else:
+            return 'Back Markers'
+
+    base['grid_category'] = base['grid'].apply(categorize_grid)
+
+    underdogs = base[(base['grid'] > 5) & (base['positionOrder'] <= 10)].copy()
+    underdogs['strategy_score'] = (
+        (underdogs['stops'].clip(1, 4) / 4) * 0.3 +
+        (1 / (underdogs['lap_time_std'].fillna(underdogs['lap_time_std'].mean()) / 1000)) * 0.7
+    )
+
+    return base, underdogs
+
 @st.cache_data
 def get_seasons_overview():
     seasons = load_data('seasons.csv')
