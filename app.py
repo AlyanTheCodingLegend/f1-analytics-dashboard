@@ -126,7 +126,60 @@ elif page == "Evolution of Speed":
 
 elif page == "Dominance Dynasties":
     st.header("🏆 Dominance Dynasties")
-    st.write("Coming soon.")
+    st.write("F1 History is defined by eras of domination. This chart visualizes the *share* of total championship points scored by each team, accounting for changes in scoring systems over time.")
+
+    dom_df = data_loader.get_dominance_data()
+
+    if dom_df is not None:
+        dom_df = dom_df[(dom_df['year'] >= year_range[0]) & (dom_df['year'] <= year_range[1])]
+
+        if selected_teams_global:
+            top_teams = [t for t in selected_teams_global if t in dom_df['name'].unique()]
+            if not top_teams:
+                top_teams = dom_df.groupby('name')['points'].sum().sort_values(ascending=False).head(10).index.tolist()
+        else:
+            top_teams = dom_df.groupby('name')['points'].sum().sort_values(ascending=False).head(10).index.tolist()
+
+        dom_df['Team'] = dom_df['name'].apply(lambda x: x if x in top_teams else 'Others')
+        chart_df = dom_df.groupby(['year', 'Team'])['points_share'].sum().reset_index()
+
+        fig_area = px.area(chart_df, x='year', y='points_share', color='Team',
+                           title='Constructor Dominance: Share of Championship Points per Year',
+                           labels={'points_share': 'Share of Total Points (%)'},
+                           category_orders={"Team": top_teams + ["Others"]})
+        st.plotly_chart(fig_area, width="stretch")
+
+        st.markdown("""
+        **Key Dynasties Detected:**
+        *   **Ferrari (Red):** The constant presence, peaking in the early 2000s (Schumacher Era).
+        *   **McLaren (Orange/Silver):** Huge peaks in late 80s (Senna/Prost) and late 90s.
+        *   **Williams (Blue):** Dominant in the 90s.
+        *   **Red Bull:** The late 2010s/early 2020s surge.
+        *   **Mercedes:** The massive hybrid-era domination (2014-2020).
+        """)
+
+        st.subheader("Race-by-Race Constructor Points")
+        con_res_df = data_loader.get_constructor_results_data()
+        if con_res_df is not None:
+            available_seasons = sorted(con_res_df['year'].unique(), reverse=True)
+            sel_season = st.selectbox("Select Season", available_seasons, key="dom_con_season")
+            season_data = con_res_df[con_res_df['year'] == sel_season].copy()
+
+            if selected_teams_global:
+                show_teams = [t for t in selected_teams_global if t in season_data['name_team'].unique()]
+            else:
+                show_teams = season_data.groupby('name_team')['points'].sum().nlargest(8).index.tolist()
+            season_data = season_data[season_data['name_team'].isin(show_teams)]
+            season_data = season_data.sort_values('round')
+            season_data['cumulative_points'] = season_data.groupby('name_team')['points'].cumsum()
+
+            fig_rr = px.line(season_data, x='round', y='cumulative_points', color='name_team',
+                             title=f"{sel_season} Constructor Points — Race by Race",
+                             labels={'cumulative_points': 'Cumulative Points', 'round': 'Round', 'name_team': 'Constructor'},
+                             markers=True)
+            st.plotly_chart(fig_rr, width="stretch")
+    else:
+        st.error("Failed to load dominance data.")
 
 elif page == "Geography of Victory":
     st.header("🌍 The Geography of Victory")
