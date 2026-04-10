@@ -115,20 +115,41 @@ def get_teammate_comparison_data(driver1_code, driver2_code, constructor_name=No
 def get_unified_data():
     """
     Builds the Master DataFrame for 'The Winning Formula' analysis.
-    Scaffold — full implementation in progress.
+    Merges: Results, Qualifying, Lap Times (Aggregated), Pit Stops (Aggregated).
     """
     results = load_data('results.csv')
     races = load_data('races.csv')
     drivers = load_data('drivers.csv')
     constructors = load_data('constructors.csv')
+    qualifying = load_data('qualifying.csv')
+    pit_stops = load_data('pit_stops.csv')
+    lap_times = load_data('lap_times.csv')
 
-    if any(df is None for df in [results, races, drivers, constructors]):
+    if any(df is None for df in [results, races, drivers, constructors, qualifying, pit_stops, lap_times]):
         return None
 
     base = pd.merge(results, races[['raceId', 'year', 'name', 'circuitId']], on='raceId', suffixes=('_res', '_race'))
     base = pd.merge(base, drivers[['driverId', 'code', 'surname', 'nationality']], on='driverId')
     base = pd.merge(base, constructors[['constructorId', 'name']], on='constructorId', suffixes=('_driver', '_team'))
     base = base[base['year'] >= 2011].copy()
+
+    quali_subset = qualifying[['raceId', 'driverId', 'position']].rename(columns={'position': 'quali_pos'})
+    base = pd.merge(base, quali_subset, on=['raceId', 'driverId'], how='left')
+
+    pit_agg = pit_stops.groupby(['raceId', 'driverId']).agg({
+        'stop': 'max',
+        'milliseconds': 'sum'
+    }).reset_index().rename(columns={'stop': 'stops', 'milliseconds': 'total_pit_time'})
+    pit_agg['total_pit_time'] = pit_agg['total_pit_time'] / 1000
+    base = pd.merge(base, pit_agg, on=['raceId', 'driverId'], how='left')
+    base['stops'] = base['stops'].fillna(0)
+    base['total_pit_time'] = base['total_pit_time'].fillna(0)
+
+    relevant_races = base['raceId'].unique()
+    laps_subset = lap_times[lap_times['raceId'].isin(relevant_races)]
+    lap_agg = laps_subset.groupby(['raceId', 'driverId'])['milliseconds'].agg(['std', 'mean']).reset_index()
+    lap_agg = lap_agg.rename(columns={'std': 'lap_time_std', 'mean': 'avg_lap_time'})
+    base = pd.merge(base, lap_agg, on=['raceId', 'driverId'], how='left')
 
     base['Win'] = base['positionOrder'].apply(lambda x: 1 if x == 1 else 0)
     base['Podium'] = base['positionOrder'].apply(lambda x: 1 if x <= 3 else 0)
