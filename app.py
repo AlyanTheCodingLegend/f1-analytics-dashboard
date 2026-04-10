@@ -167,7 +167,45 @@ elif page == "Advanced: Reliability":
 
 elif page == "Advanced: Teammate Wars":
     st.header("⚔️ Teammate Killers")
-    st.write("Coming soon.")
+    st.write("Compare legendary rivalries. Who came out on top in the same machinery?")
+
+    rivalries = {
+        "Hamilton vs Rosberg (Merc)": ("HAM", "ROS"),
+        "Senna vs Prost (McLaren)": ("SEN", "PRO"),
+        "Vettel vs Webber (Red Bull)": ("VET", "WEB"),
+        "Verstappen vs Perez (Red Bull)": ("VER", "PER"),
+        "Leclerc vs Sainz (Ferrari)": ("LEC", "SAI"),
+        "Alonso vs Hamilton (McLaren 2007)": ("ALO", "HAM")
+    }
+
+    selection = st.selectbox("Select Rivalry", list(rivalries.keys()))
+    d1_code, d2_code = rivalries[selection]
+
+    stats = data_loader.get_teammate_comparison_data(d1_code, d2_code)
+
+    if stats:
+        st.subheader(f"{stats['d1_name']} vs {stats['d2_name']}")
+        st.markdown(f"**Races Together:** {stats['races_together']}")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric(label=f"{stats['d1_name']} Wins", value=stats['d1_wins'])
+            st.metric(label=f"{stats['d1_name']} Points", value=stats['d1_points'])
+            st.metric(label="Finished Ahead", value=stats['d1_ahead'])
+        with col2:
+            st.metric(label=f"{stats['d2_name']} Wins", value=stats['d2_wins'])
+            st.metric(label=f"{stats['d2_name']} Points", value=stats['d2_points'])
+            st.metric(label="Finished Ahead", value=stats['d2_ahead'])
+
+        comp_data = pd.DataFrame({
+            'Driver': [stats['d1_name'], stats['d2_name']],
+            'Points': [stats['d1_points'], stats['d2_points']],
+            'Wins': [stats['d1_wins'], stats['d2_wins']]
+        })
+        fig_comp = px.bar(comp_data, x='Driver', y=['Points', 'Wins'], barmode='group', title="Head-to-Head Stats")
+        st.plotly_chart(fig_comp, width="stretch")
+    else:
+        st.error("Data not found for these drivers.")
 
 elif page == "🏆 Championship Battle":
     st.header("🏆 Championship Battle: Season Standings Evolution")
