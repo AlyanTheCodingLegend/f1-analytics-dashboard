@@ -405,8 +405,70 @@ elif page == "🎯 THE UNDERDOG EFFECT":
         st.error("Could not load Underdog Analysis data.")
 
 elif page == "⚰️ THE CONSTRUCTOR'S CURSE":
-    st.header("⚰️ The Constructor's Curse")
-    st.write("Coming soon.")
+    st.header("⚰️ The Constructor's Curse: Why Dynasties Fall")
+    st.write("""**The Inevitable Truth**: Every F1 dynasty eventually crumbles.
+    Can we predict when the current champions will fall? Let's analyze the warning signs.""")
+
+    result = data_loader.get_dynasty_decline_analysis()
+
+    if result is not None:
+        yearly_stats, dynasty_data = result
+
+        st.subheader("1. The Rise and Fall of Empires")
+        dynasties_to_plot = ['Ferrari', 'McLaren', 'Red Bull', 'Mercedes', 'Williams']
+        dynasty_subset = dynasty_data[dynasty_data['constructor'].isin(dynasties_to_plot)]
+        fig_lifecycle = px.line(dynasty_subset, x='year', y='market_share', color='constructor',
+                                title="Market Share Over Time: The Great Dynasties (1950-2023)",
+                                labels={'market_share': 'Market Share (%)', 'year': 'Year', 'constructor': 'Team'},
+                                markers=True)
+        fig_lifecycle.add_hline(y=20, line_dash="dash", line_color="red", annotation_text="Dominance Threshold (20%)")
+        st.plotly_chart(fig_lifecycle, width="stretch")
+
+        st.subheader("2. The Warning Signs of Decline")
+        recent_dynasties = dynasty_data[dynasty_data['year'] >= 2010]
+        fig_decline = px.scatter(recent_dynasties, x='year', y='constructor',
+                                 size='market_share', color='decline_score',
+                                 title="Decline Warning Signals (2010-2023)",
+                                 color_continuous_scale='RdYlGn_r',
+                                 labels={'decline_score': 'Warning Level', 'market_share': 'Market Share'})
+        st.plotly_chart(fig_decline, width="stretch")
+
+        st.subheader("3. How Fast Do Dynasties Fall?")
+        collapse_analysis = []
+        for team in dynasties_to_plot:
+            team_data = dynasty_data[dynasty_data['constructor'] == team].sort_values('year')
+            peaks = team_data[team_data['market_share'] > 30]
+            if not peaks.empty:
+                for _, peak_row in peaks.iterrows():
+                    peak_year = peak_row['year']
+                    future_data = team_data[team_data['year'] > peak_year]
+                    trough = future_data[future_data['market_share'] < 10]
+                    if not trough.empty:
+                        trough_year = trough.iloc[0]['year']
+                        collapse_analysis.append({'Team': team, 'Peak Year': peak_year, 'Collapse Year': trough_year, 'Years to Collapse': trough_year - peak_year})
+
+        if collapse_analysis:
+            collapse_df = pd.DataFrame(collapse_analysis)
+            fig_collapse = px.bar(collapse_df, x='Team', y='Years to Collapse',
+                                  hover_data=['Peak Year', 'Collapse Year'],
+                                  title="Time from Peak Dominance to Irrelevance",
+                                  color='Years to Collapse', color_continuous_scale='Reds')
+            st.plotly_chart(fig_collapse, width="stretch")
+            st.metric("Average Collapse Duration", f"{collapse_df['Years to Collapse'].mean():.1f} years")
+
+        st.subheader("4. Who's Next to Fall?")
+        recent_data = dynasty_data[dynasty_data['year'] >= 2021].copy()
+        current_status = recent_data.groupby('constructor').agg({
+            'market_share': 'mean', 'points_pct_change': 'mean',
+            'decline_score': 'mean', 'reliability': 'mean'
+        }).reset_index().sort_values('market_share', ascending=False).head(5)
+        fig_current = px.bar(current_status, x='constructor', y='market_share', color='decline_score',
+                             title="Current Dynasty Health Check (2021-2023 Average)",
+                             color_continuous_scale='RdYlGn_r',
+                             labels={'market_share': 'Avg Market Share (%)', 'constructor': 'Team', 'decline_score': 'Risk Level'})
+        st.plotly_chart(fig_current, width="stretch")
+    else:
+        st.error("Could not load Dynasty Analysis data.")
 
 elif page == "🧒 THE ROOKIE PARADOX":
     st.header("🧒 The Rookie Paradox")
