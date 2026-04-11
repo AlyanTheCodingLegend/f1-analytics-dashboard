@@ -213,6 +213,36 @@ def get_constructor_results_data():
                       suffixes=('_race', '_team'))
     return merged
 
+def get_geography_data():
+    """
+    Prepares data for 'The Geography of Victory'.
+    Counts wins per driver nationality.
+    """
+    results = load_data('results.csv')
+    drivers = load_data('drivers.csv')
+
+    if results is None or drivers is None:
+        return None
+
+    merged = pd.merge(results, drivers, on='driverId')
+    wins = merged[merged['positionOrder'] == 1]
+    win_counts = wins['nationality'].value_counts().reset_index()
+    win_counts.columns = ['nationality', 'wins']
+
+    nationality_map = {
+        'British': 'United Kingdom', 'German': 'Germany', 'Brazilian': 'Brazil',
+        'French': 'France', 'Finnish': 'Finland', 'Italian': 'Italy',
+        'Australian': 'Australia', 'Austrian': 'Austria', 'Argentine': 'Argentina',
+        'American': 'United States', 'Canadian': 'Canada', 'Spanish': 'Spain',
+        'Dutch': 'Netherlands', 'Belgian': 'Belgium', 'Swedish': 'Sweden',
+        'New Zealander': 'New Zealand', 'South African': 'South Africa',
+        'Swiss': 'Switzerland', 'Colombian': 'Colombia', 'Venezuelan': 'Venezuela',
+        'Mexican': 'Mexico', 'Polish': 'Poland', 'Monegasque': 'Monaco'
+    }
+    win_counts['country'] = win_counts['nationality'].map(nationality_map).fillna(win_counts['nationality'])
+
+    return win_counts
+
 def get_underdog_analysis():
     """
     Analyzes 'The Underdog Effect': Can strategy overcome poor qualifying?

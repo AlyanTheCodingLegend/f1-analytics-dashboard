@@ -183,7 +183,30 @@ elif page == "Dominance Dynasties":
 
 elif page == "Geography of Victory":
     st.header("🌍 The Geography of Victory")
-    st.write("Coming soon.")
+    st.write("Where do F1 champions come from? This map visualizes the total number of Grand Prix wins achieved by drivers from each country.")
+
+    geo_df = data_loader.get_geography_data()
+
+    if geo_df is not None:
+        fig_map = px.choropleth(geo_df, locations="country", locationmode="country names",
+                                color="wins", hover_name="nationality",
+                                color_continuous_scale=px.colors.sequential.Plasma,
+                                title="Total F1 Wins by Country of Driver Origin",
+                                labels={'wins': 'Total Wins'})
+        st.plotly_chart(fig_map, width="stretch")
+
+        st.subheader("Leaderboard: Wins by Nation")
+        st.dataframe(geo_df.sort_values(by='wins', ascending=False).set_index('country')[['wins']], width="stretch")
+
+        st.markdown("""
+        **Insights:**
+        *   **United Kingdom:** Historically the most successful nation (Hamilton, Mansell, Stewart, Clark).
+        *   **Germany:** Propelled largely by Michael Schumacher and Sebastian Vettel.
+        *   **Brazil:** The legacy of Senna, Piquet, and Fittipaldi.
+        *   **Finland:** The "Flying Finns" punch significantly above their weight relative to population size.
+        """)
+    else:
+        st.error("Failed to load geography data.")
 
 elif page == "Advanced: Quali vs Race":
     st.header("🚦 Qualifying Merchants vs. Race Monsters")
