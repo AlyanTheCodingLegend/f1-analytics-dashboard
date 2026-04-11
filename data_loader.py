@@ -213,6 +213,45 @@ def get_constructor_results_data():
                       suffixes=('_race', '_team'))
     return merged
 
+def get_dynasty_decline_analysis():
+    """
+    Analyzes 'The Constructor's Curse': Why do dominant teams eventually fall?
+    """
+    results = load_data('results.csv')
+    races = load_data('races.csv')
+    constructors = load_data('constructors.csv')
+    constructor_standings = load_data('constructor_standings.csv')
+
+    if any(df is None for df in [results, races, constructors, constructor_standings]):
+        return None
+
+    base = pd.merge(results, races[['raceId', 'year']], on='raceId')
+    base = pd.merge(base, constructors[['constructorId', 'name']], on='constructorId')
+
+    yearly_stats = base.groupby(['year', 'name']).agg({
+        'points': 'sum',
+        'positionOrder': 'mean',
+        'statusId': lambda x: (x == 1).sum() / len(x)
+    }).reset_index()
+    yearly_stats.columns = ['year', 'constructor', 'total_points', 'avg_finish', 'reliability']
+
+    yearly_stats = yearly_stats.sort_values(['constructor', 'year'])
+    yearly_stats['points_change'] = yearly_stats.groupby('constructor')['total_points'].diff()
+    yearly_stats['points_pct_change'] = yearly_stats.groupby('constructor')['total_points'].pct_change() * 100
+    yearly_stats['total_season_points'] = yearly_stats.groupby('year')['total_points'].transform('sum')
+    yearly_stats['market_share'] = (yearly_stats['total_points'] / yearly_stats['total_season_points']) * 100
+    yearly_stats['is_dominant'] = yearly_stats['market_share'] > 20
+
+    dynasties = ['Ferrari', 'McLaren', 'Red Bull', 'Mercedes', 'Williams', 'Renault']
+    dynasty_data = yearly_stats[yearly_stats['constructor'].isin(dynasties)].copy()
+
+    dynasty_data['decline_score'] = 0
+    dynasty_data.loc[dynasty_data['points_pct_change'] < -10, 'decline_score'] += 1
+    dynasty_data.loc[dynasty_data['reliability'] < 0.7, 'decline_score'] += 1
+    dynasty_data.loc[dynasty_data['avg_finish'] > 8, 'decline_score'] += 1
+
+    return yearly_stats, dynasty_data
+
 def get_geography_data():
     """
     Prepares data for 'The Geography of Victory'.
