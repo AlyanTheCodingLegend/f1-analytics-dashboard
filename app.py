@@ -355,8 +355,54 @@ elif page == "THE WINNING FORMULA 🏆":
     st.write("Coming soon.")
 
 elif page == "🎯 THE UNDERDOG EFFECT":
-    st.header("🎯 The Underdog Effect")
-    st.write("Coming soon.")
+    st.header("🎯 The Underdog Effect: Can Strategy Overcome Speed?")
+    st.write("""**The Ultimate Question**: If you start from the back of the grid, can brilliant strategy,
+    tire management, and racecraft overcome a slow car? Let's find out.""")
+
+    result = data_loader.get_underdog_analysis()
+
+    if result is not None:
+        base, underdogs = result
+
+        st.subheader("1. The Comeback Kings (Biggest Position Gains)")
+        top_comebacks = base.nlargest(20, 'positions_gained')[['year', 'surname', 'name_driver', 'grid', 'positionOrder', 'positions_gained', 'stops', 'lap_time_std']]
+        fig_comeback = px.bar(top_comebacks, x='surname', y='positions_gained',
+                              hover_data=['year', 'name_driver', 'grid', 'positionOrder'],
+                              title="Top 20 Single-Race Comebacks (2011-2023)",
+                              color='positions_gained', color_continuous_scale='Viridis',
+                              labels={'positions_gained': 'Positions Gained', 'surname': 'Driver'})
+        st.plotly_chart(fig_comeback, width="stretch")
+
+        st.subheader("2. Does Strategy Matter More for Underdogs?")
+        fig_box = px.box(base, x='grid_category', y='positions_gained',
+                         title="Position Gains by Starting Grid Category",
+                         category_orders={'grid_category': ['Front Row', 'Top 10', 'Midfield', 'Back Markers']},
+                         color='grid_category',
+                         labels={'positions_gained': 'Positions Gained', 'grid_category': 'Starting Position'})
+        st.plotly_chart(fig_box, width="stretch")
+
+        st.subheader("3. The Underdog Hall of Fame")
+        underdog_stats = underdogs.groupby('surname').agg({
+            'positions_gained': 'mean', 'raceId': 'count',
+            'strategy_score': 'mean', 'stops': 'mean'
+        }).reset_index()
+        underdog_stats.columns = ['Driver', 'Avg Positions Gained', 'Underdog Races', 'Strategy Score', 'Avg Stops']
+        underdog_stats = underdog_stats[underdog_stats['Underdog Races'] >= 5].sort_values('Avg Positions Gained', ascending=False).head(15)
+        fig_underdog = px.scatter(underdog_stats, x='Avg Positions Gained', y='Strategy Score',
+                                  size='Underdog Races', hover_data=['Driver', 'Avg Stops'],
+                                  title="The Strategic Geniuses (Min. 5 Underdog Races)", text='Driver')
+        st.plotly_chart(fig_underdog, width="stretch")
+
+        st.subheader("4. The Pit Stop Gamble")
+        back_starters = base[base['grid'] > 10].copy()
+        pit_analysis = back_starters.groupby('stops')['positions_gained'].mean().reset_index()
+        pit_analysis = pit_analysis[pit_analysis['stops'] <= 5]
+        fig_pit = px.line(pit_analysis, x='stops', y='positions_gained',
+                          title="Average Position Gain vs. Number of Pit Stops (Started 11th+)",
+                          markers=True, labels={'stops': 'Number of Pit Stops', 'positions_gained': 'Avg Positions Gained'})
+        st.plotly_chart(fig_pit, width="stretch")
+    else:
+        st.error("Could not load Underdog Analysis data.")
 
 elif page == "⚰️ THE CONSTRUCTOR'S CURSE":
     st.header("⚰️ The Constructor's Curse")
