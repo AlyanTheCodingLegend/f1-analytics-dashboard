@@ -282,6 +282,38 @@ def get_geography_data():
 
     return win_counts
 
+def get_reliability_data():
+    """
+    Prepares data for 'The Graveyard of Gears' (Reliability evolution).
+    """
+    results = load_data('results.csv')
+    status = load_data('status.csv')
+    races = load_data('races.csv')
+
+    if results is None or status is None or races is None:
+        return None
+
+    merged = pd.merge(results, status, on='statusId')
+    merged = pd.merge(merged, races[['raceId', 'year']], on='raceId')
+
+    def categorize_status(row):
+        sid = row['statusId']
+        s = row['status'].lower()
+        if sid == 1 or s.startswith('+'): return 'Finished'
+        elif sid in [3, 4, 130, 137] or 'accident' in s or 'collision' in s or 'spun' in s: return 'Accident/Collision'
+        elif sid == 2 or 'disqualified' in s: return 'Disqualified'
+        else: return 'Mechanical/Technical Failure'
+
+    merged['category'] = merged.apply(categorize_status, axis=1)
+    merged['decade'] = (merged['year'] // 10) * 10
+    merged['decade'] = merged['decade'].astype(str) + "s"
+
+    agg = merged.groupby(['decade', 'category']).size().reset_index(name='count')
+    decade_totals = agg.groupby('decade')['count'].transform('sum')
+    agg['percentage'] = (agg['count'] / decade_totals) * 100
+
+    return agg
+
 def get_rookie_paradox_analysis():
     """
     Analyzes 'The Rookie Paradox': When does experience become a curse?

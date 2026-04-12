@@ -239,7 +239,22 @@ elif page == "Advanced: Quali vs Race":
 
 elif page == "Advanced: Reliability":
     st.header("☠️ The Graveyard of Gears")
-    st.write("Coming soon.")
+    st.write("Visualizing the evolution of F1 reliability. In the 80s, finishing was a luxury. Today, it's expected.")
+
+    rel_df = data_loader.get_reliability_data()
+
+    if rel_df is not None:
+        fig_rel = px.bar(rel_df, x="decade", y="percentage", color="category",
+                         title="Race Outcome Categories by Decade (Percentage)",
+                         category_orders={"category": ["Finished", "Accident/Collision", "Mechanical/Technical Failure", "Disqualified"]},
+                         color_discrete_map={
+                             "Finished": "#2ecc71",
+                             "Accident/Collision": "#e74c3c",
+                             "Mechanical/Technical Failure": "#95a5a6",
+                             "Disqualified": "#34495e"
+                         })
+        st.plotly_chart(fig_rel, width="stretch")
+        st.markdown("**Insight:** Note the massive gray block (Mechanical Failures) shrinking from the 1980s to the 2020s. Modern cars are engineering marvels of durability.")
 
 elif page == "Advanced: Teammate Wars":
     st.header("⚔️ Teammate Killers")
