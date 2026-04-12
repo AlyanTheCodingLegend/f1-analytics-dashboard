@@ -235,7 +235,7 @@ elif page == "Advanced: Quali vs Race":
         fig_qvr.update_yaxes(autorange="reversed")
         fig_qvr.update_xaxes(autorange="reversed")
         st.plotly_chart(fig_qvr, width="stretch")
-        st.markdown("**Interpretation**: Drivers below/left of the dashed line consistently improve their position on race day.")
+        st.markdown("**Interpretation**: Drivers below/left of the dashed line consistently improve their position on race day. Above/right = Qualifying specialists who struggle on race day.")
 
 elif page == "Advanced: Reliability":
     st.header("☠️ The Graveyard of Gears")
