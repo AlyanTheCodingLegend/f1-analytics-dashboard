@@ -282,6 +282,54 @@ def get_geography_data():
 
     return win_counts
 
+def get_rookie_paradox_analysis():
+    """
+    Analyzes 'The Rookie Paradox': When does experience become a curse?
+    """
+    results = load_data('results.csv')
+    races = load_data('races.csv')
+    drivers = load_data('drivers.csv')
+
+    if any(df is None for df in [results, races, drivers]):
+        return None
+
+    base = pd.merge(results, races[['raceId', 'year', 'date']], on='raceId')
+    base = pd.merge(base, drivers[['driverId', 'code', 'surname', 'dob']], on='driverId')
+
+    base['date'] = pd.to_datetime(base['date'])
+    base['dob'] = pd.to_datetime(base['dob'])
+    base['age'] = (base['date'] - base['dob']).dt.days / 365.25
+
+    base = base.sort_values(['driverId', 'date'])
+    base['race_number'] = base.groupby('driverId').cumcount() + 1
+
+    def experience_category(race_num):
+        if race_num <= 20: return 'Rookie (1-20 races)'
+        elif race_num <= 50: return 'Developing (21-50)'
+        elif race_num <= 100: return 'Experienced (51-100)'
+        elif race_num <= 200: return 'Veteran (101-200)'
+        else: return 'Legend (200+)'
+
+    def age_category(age):
+        if age < 23: return 'Young Gun (<23)'
+        elif age < 28: return 'Prime (23-27)'
+        elif age < 33: return 'Experienced (28-32)'
+        elif age < 38: return 'Veteran (33-37)'
+        else: return 'Elder (38+)'
+
+    base['experience_level'] = base['race_number'].apply(experience_category)
+    base['age_group'] = base['age'].apply(age_category)
+    base['podium'] = (base['positionOrder'] <= 3).astype(int)
+    base['points_scored'] = base['points'] > 0
+
+    driver_stats = base.groupby('driverId').agg({
+        'age': 'mean', 'race_number': 'max', 'positionOrder': 'mean',
+        'points': 'sum', 'podium': 'sum', 'surname': 'first'
+    }).reset_index()
+    driver_stats = driver_stats[driver_stats['race_number'] >= 50]
+
+    return base, driver_stats
+
 def get_underdog_analysis():
     """
     Analyzes 'The Underdog Effect': Can strategy overcome poor qualifying?

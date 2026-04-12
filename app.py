@@ -471,8 +471,47 @@ elif page == "⚰️ THE CONSTRUCTOR'S CURSE":
         st.error("Could not load Dynasty Analysis data.")
 
 elif page == "🧒 THE ROOKIE PARADOX":
-    st.header("🧒 The Rookie Paradox")
-    st.write("Coming soon.")
+    st.header("🧒 The Rookie Paradox: When Experience Becomes a Curse")
+    st.write("""**The Burning Question**: At what age do F1 drivers peak?
+    And when does experience stop helping and start hurting? Let's find the sweet spot.""")
+
+    result = data_loader.get_rookie_paradox_analysis()
+
+    if result is not None:
+        base, driver_stats = result
+
+        st.subheader("1. The Biological Clock: Age vs. Performance")
+        age_performance = base.groupby('age_group')['positionOrder'].mean().reset_index().sort_values('positionOrder')
+        fig_age = px.bar(age_performance, x='age_group', y='positionOrder',
+                         title="Average Finishing Position by Age Group",
+                         labels={'positionOrder': 'Avg Finish Position', 'age_group': 'Age Group'},
+                         color='positionOrder', color_continuous_scale='RdYlGn_r')
+        fig_age.update_yaxes(autorange="reversed")
+        st.plotly_chart(fig_age, width="stretch")
+        st.success(f"🎯 **Peak Performance Age**: {age_performance.iloc[0]['age_group']}")
+
+        st.subheader("2. The Learning Curve: Experience vs. Results")
+        exp_order = ['Rookie (1-20 races)', 'Developing (21-50)', 'Experienced (51-100)', 'Veteran (101-200)', 'Legend (200+)']
+        exp_performance = base.groupby('experience_level').agg({'positionOrder': 'mean', 'podium': 'mean', 'points_scored': 'mean'}).reset_index()
+        exp_performance['experience_level'] = pd.Categorical(exp_performance['experience_level'], categories=exp_order, ordered=True)
+        exp_performance = exp_performance.sort_values('experience_level')
+        fig_learning = px.line(exp_performance, x='experience_level', y='positionOrder',
+                               title="The Learning Curve: Performance by Experience Level",
+                               labels={'positionOrder': 'Avg Finish Position', 'experience_level': 'Experience'}, markers=True)
+        fig_learning.update_yaxes(autorange="reversed")
+        st.plotly_chart(fig_learning, width="stretch")
+
+        st.subheader("3. The Podium Probability Matrix")
+        age_order = ['Young Gun (<23)', 'Prime (23-27)', 'Experienced (28-32)', 'Veteran (33-37)', 'Elder (38+)']
+        podium_matrix = base.groupby(['age_group', 'experience_level'])['podium'].mean().reset_index()
+        podium_pivot = podium_matrix.pivot(index='age_group', columns='experience_level', values='podium')
+        podium_pivot = podium_pivot.reindex(age_order)
+        podium_pivot = podium_pivot.reindex(columns=exp_order)
+        fig_matrix = px.imshow(podium_pivot, title="Podium Probability by Age and Experience (%)",
+                               color_continuous_scale='YlOrRd', text_auto='.2%')
+        st.plotly_chart(fig_matrix, width="stretch")
+    else:
+        st.error("Could not load Rookie Paradox data.")
 
 elif page == "🏎️ THE CIRCUIT DNA":
     st.header("🏎️ The Circuit DNA")
