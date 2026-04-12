@@ -533,8 +533,58 @@ elif page == "🏎️ THE CIRCUIT DNA":
     st.write("Coming soon.")
 
 elif page == "💰 THE MILLION DOLLAR LAP":
-    st.header("💰 The Million Dollar Lap")
-    st.write("Coming soon.")
+    st.header("💰 The Million Dollar Lap: Economics of F1 Performance")
+    st.write("""**The Ultimate Question**: Does money buy championships?
+    Let's analyze team efficiency, ROI, and find out which teams deliver the most bang for their buck.""")
+
+    result = data_loader.get_economics_analysis()
+
+    if result is not None:
+        base, team_yearly, driver_value = result
+
+        st.subheader("1. The Efficiency Kings: Most Points Per Race")
+        recent_teams = team_yearly[team_yearly['year'] >= 2014]
+        efficiency_stats = recent_teams.groupby('team').agg({
+            'points_per_race': 'mean', 'win_rate': 'mean', 'races': 'sum'
+        }).reset_index()
+        efficiency_stats = efficiency_stats[efficiency_stats['races'] >= 50].nlargest(15, 'points_per_race')
+        fig_efficiency = px.bar(efficiency_stats, x='team', y='points_per_race',
+                                title="Most Efficient Teams (2014-2023): Points Per Race",
+                                color='points_per_race', color_continuous_scale='Viridis',
+                                hover_data=['win_rate', 'races'])
+        st.plotly_chart(fig_efficiency, width="stretch")
+
+        st.subheader("2. The Dominance Timeline: Who Ruled Each Era?")
+        major_teams = ['Ferrari', 'McLaren', 'Red Bull', 'Mercedes', 'Williams', 'Renault']
+        dominance_data = team_yearly[team_yearly['team'].isin(major_teams)]
+        fig_timeline = px.line(dominance_data, x='year', y='dominance_score', color='team',
+                               title="Team Dominance Score Over Time (1950-2023)",
+                               labels={'dominance_score': 'Dominance Score', 'year': 'Year'}, markers=True)
+        st.plotly_chart(fig_timeline, width="stretch")
+
+        st.subheader("3. The Value Drivers: Best ROI Per Career")
+        top_value = driver_value.nlargest(20, 'points_per_race')
+        fig_value = px.scatter(top_value, x='races', y='points_per_race', size='wins',
+                               hover_data=['driver', 'team', 'career_length'],
+                               title="Driver Value: Points Per Race vs. Career Length",
+                               color='wins', color_continuous_scale='Reds', text='driver')
+        st.plotly_chart(fig_value, width="stretch")
+
+        st.subheader("4. The Win Rate Hierarchy")
+        recent_win_rates = recent_teams.groupby('team')['win_rate'].mean().reset_index().nlargest(10, 'win_rate')
+        fig_winrate = px.bar(recent_win_rates, x='team', y='win_rate',
+                             title="Average Win Rate by Team (2014-2023)",
+                             color='win_rate', color_continuous_scale='Greens')
+        st.plotly_chart(fig_winrate, width="stretch")
+
+        st.subheader("5. The Championship Math")
+        champions = team_yearly.loc[team_yearly.groupby('year')['total_points'].idxmax()]
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Avg Championship Points", f"{champions['total_points'].mean():.0f}")
+        col2.metric("Avg Championship Wins", f"{champions['wins'].mean():.1f}")
+        col3.metric("Avg Points Per Race", f"{champions['points_per_race'].mean():.1f}")
+    else:
+        st.error("Could not load Economics Analysis data.")
 
 elif page == "🦋 THE BUTTERFLY EFFECT":
     st.header("🦋 The Butterfly Effect")

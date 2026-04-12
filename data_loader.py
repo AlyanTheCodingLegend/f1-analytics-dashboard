@@ -282,6 +282,53 @@ def get_geography_data():
 
     return win_counts
 
+def get_economics_analysis():
+    """
+    Analyzes 'The Million Dollar Lap': Economics of F1 Performance.
+    """
+    results = load_data('results.csv')
+    races = load_data('races.csv')
+    constructors = load_data('constructors.csv')
+    constructor_standings = load_data('constructor_standings.csv')
+    drivers = load_data('drivers.csv')
+
+    if any(df is None for df in [results, races, constructors, constructor_standings, drivers]):
+        return None
+
+    base = pd.merge(results, races[['raceId', 'year']], on='raceId')
+    base = pd.merge(base, constructors[['constructorId', 'name']], on='constructorId')
+    base = pd.merge(base, drivers[['driverId', 'surname']], on='driverId')
+
+    team_yearly = base.groupby(['year', 'name']).agg({
+        'points': 'sum',
+        'raceId': 'count',
+        'positionOrder': lambda x: (x == 1).sum(),
+    }).reset_index()
+    team_yearly.columns = ['year', 'team', 'total_points', 'races', 'wins']
+    team_yearly['points_per_race'] = team_yearly['total_points'] / team_yearly['races']
+    team_yearly['win_rate'] = (team_yearly['wins'] / team_yearly['races']) * 100
+
+    team_yearly = team_yearly.sort_values(['team', 'year'])
+    team_yearly['rolling_points'] = team_yearly.groupby('team')['total_points'].transform(
+        lambda x: x.rolling(window=3, min_periods=1).mean()
+    )
+    team_yearly['dominance_score'] = (
+        (team_yearly['points_per_race'] / team_yearly['points_per_race'].max()) * 0.6 +
+        (team_yearly['win_rate'] / 100) * 0.4
+    ) * 100
+
+    driver_value = base.groupby(['surname', 'name']).agg({
+        'points': 'sum', 'raceId': 'count',
+        'positionOrder': lambda x: (x == 1).sum(),
+        'year': ['min', 'max']
+    }).reset_index()
+    driver_value.columns = ['driver', 'team', 'total_points', 'races', 'wins', 'first_year', 'last_year']
+    driver_value['career_length'] = driver_value['last_year'] - driver_value['first_year'] + 1
+    driver_value['points_per_race'] = driver_value['total_points'] / driver_value['races']
+    driver_value = driver_value[driver_value['races'] >= 50]
+
+    return base, team_yearly, driver_value
+
 def get_reliability_data():
     """
     Prepares data for 'The Graveyard of Gears' (Reliability evolution).
