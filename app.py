@@ -626,8 +626,48 @@ elif page == "🦋 THE BUTTERFLY EFFECT":
     st.write("Coming soon.")
 
 elif page == "🌈 THE RAINBOW ROAD":
-    st.header("🌈 The Rainbow Road")
-    st.write("Coming soon.")
+    st.header("🌈 The Rainbow Road: A Visual Journey Through F1 History")
+    st.write("""**Pure Visual Magic**: Forget boring bar charts.
+    Let's explore F1 history through stunning, colorful, interactive visualizations that tell stories at a glance.""")
+
+    result = data_loader.get_rainbow_road_analysis()
+
+    if result is not None:
+        base, hierarchy_data, yearly_performance, nationality_wins, team_driver_wins = result
+
+        st.subheader("1. ☀️ The Sunburst of Champions")
+        fig_sunburst = px.sunburst(hierarchy_data, path=['decade_label', 'name_team', 'surname'],
+                                   title="F1 Wins Hierarchy: Decades → Teams → Drivers",
+                                   color='decade_label', color_discrete_sequence=px.colors.qualitative.Vivid)
+        fig_sunburst.update_traces(textinfo='label+percent parent')
+        st.plotly_chart(fig_sunburst, width="stretch")
+
+        st.subheader("2. 🗺️ The Treemap of Dominance")
+        team_points = base.groupby(['name_team', 'decade_label'])['points'].sum().reset_index()
+        team_points = team_points[team_points['points'] > 100]
+        fig_treemap = px.treemap(team_points, path=['decade_label', 'name_team'], values='points',
+                                 title="Team Dominance Treemap: Bigger = More Points",
+                                 color='points', color_continuous_scale='Rainbow')
+        st.plotly_chart(fig_treemap, width="stretch")
+
+        st.subheader("3. 🎬 The Animated Racing Timeline")
+        top_teams = yearly_performance.groupby('team')['total_points'].sum().nlargest(10).index.tolist()
+        animated_data = yearly_performance[yearly_performance['team'].isin(top_teams)]
+        animated_data = animated_data[animated_data['total_points'] > 0]
+        fig_animated = px.scatter(animated_data, x='points_per_race', y='wins',
+                                  animation_frame='year', size='total_points', color='team',
+                                  hover_name='team', title="Team Performance Evolution (1950-2023)",
+                                  range_x=[0, 30], range_y=[0, 20],
+                                  color_discrete_sequence=px.colors.qualitative.Bold)
+        st.plotly_chart(fig_animated, width="stretch")
+
+        st.subheader("4. 🌍 The Polar Chart of Nationality")
+        fig_polar = px.bar_polar(nationality_wins, r='wins', theta='nationality',
+                                 title="F1 Wins by Driver Nationality",
+                                 color='wins', color_continuous_scale='Turbo', template='plotly_dark')
+        st.plotly_chart(fig_polar, width="stretch")
+    else:
+        st.error("Could not load Rainbow Road data.")
 
 elif page == "⛈️ THE PERFECT STORM":
     st.header("⛈️ The Perfect Storm")
