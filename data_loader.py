@@ -282,6 +282,153 @@ def get_geography_data():
 
     return win_counts
 
+def get_butterfly_effect_analysis():
+    """
+    Analyzes 'The Butterfly Effect': How one lap changes everything.
+    """
+    results = load_data('results.csv')
+    races = load_data('races.csv')
+    drivers = load_data('drivers.csv')
+    lap_times = load_data('lap_times.csv')
+    pit_stops = load_data('pit_stops.csv')
+
+    if any(df is None for df in [results, races, drivers, lap_times, pit_stops]):
+        return None
+
+    races_modern = races[races['year'] >= 2011]
+    base = pd.merge(results, races_modern[['raceId', 'year', 'name']], on='raceId')
+    base = pd.merge(base, drivers[['driverId', 'surname']], on='driverId')
+    base['comeback_magnitude'] = base['grid'] - base['positionOrder']
+
+    dramatic_races = base.groupby('raceId').agg({
+        'comeback_magnitude': 'std', 'year': 'first', 'name': 'first'
+    }).reset_index()
+    dramatic_races.columns = ['raceId', 'drama_score', 'year', 'race_name']
+    dramatic_races = dramatic_races.nlargest(20, 'drama_score')
+
+    pit_impact = pd.merge(pit_stops, results[['raceId', 'driverId', 'grid', 'positionOrder']], on=['raceId', 'driverId'])
+    pit_impact = pd.merge(pit_impact, drivers[['driverId', 'surname']], on='driverId')
+    pit_impact = pd.merge(pit_impact, races_modern[['raceId', 'year', 'name']], on='raceId')
+    pit_impact['duration_seconds'] = pit_impact['milliseconds'] / 1000
+    fastest_stops = pit_impact.nsmallest(50, 'duration_seconds')[['year', 'name', 'surname', 'stop', 'duration_seconds', 'lap']]
+
+    modern_laps = pd.merge(lap_times, races_modern[['raceId', 'year', 'name']], on='raceId')
+    modern_laps = pd.merge(modern_laps, drivers[['driverId', 'surname']], on='driverId')
+    lap_consistency = modern_laps.groupby(['raceId', 'driverId', 'surname', 'year', 'name'])['milliseconds'].agg(['mean', 'std', 'count']).reset_index()
+    lap_consistency.columns = ['raceId', 'driverId', 'driver', 'year', 'race', 'avg_lap_time', 'lap_std', 'laps_completed']
+    lap_consistency = lap_consistency[lap_consistency['laps_completed'] >= 30]
+    lap_consistency['clutch_score'] = 1 / (lap_consistency['lap_std'] / 1000)
+
+    return base, dramatic_races, fastest_stops, lap_consistency
+
+def get_rainbow_road_analysis():
+    """
+    Analyzes 'The Rainbow Road': A visual journey through F1 history.
+    """
+    results = load_data('results.csv')
+    races = load_data('races.csv')
+    drivers = load_data('drivers.csv')
+    constructors = load_data('constructors.csv')
+    circuits = load_data('circuits.csv')
+
+    if any(df is None for df in [results, races, drivers, constructors, circuits]):
+        return None
+
+    base = pd.merge(results, races[['raceId', 'year', 'name', 'circuitId']], on='raceId')
+    base = pd.merge(base, drivers[['driverId', 'surname', 'nationality']], on='driverId')
+    base = pd.merge(base, constructors[['constructorId', 'name']], on='constructorId', suffixes=('_race', '_team'))
+    base = pd.merge(base, circuits[['circuitId', 'country']], on='circuitId')
+
+    base['decade'] = (base['year'] // 10) * 10
+    base['decade_label'] = base['decade'].astype(str) + 's'
+    base['win'] = (base['positionOrder'] == 1).astype(int)
+
+    hierarchy_data = base[base['win'] == 1].copy()
+
+    yearly_performance = base.groupby(['year', 'name_team']).agg({
+        'points': 'sum', 'win': 'sum', 'raceId': 'count'
+    }).reset_index()
+    yearly_performance.columns = ['year', 'team', 'total_points', 'wins', 'races']
+    yearly_performance['points_per_race'] = yearly_performance['total_points'] / yearly_performance['races']
+
+    nationality_wins = base[base['win'] == 1].groupby('nationality').size().reset_index()
+    nationality_wins.columns = ['nationality', 'wins']
+    nationality_wins = nationality_wins.nlargest(15, 'wins')
+
+    team_driver_wins = base[base['win'] == 1].groupby(['name_team', 'surname']).size().reset_index()
+    team_driver_wins.columns = ['team', 'driver', 'wins']
+    team_driver_wins = team_driver_wins[team_driver_wins['wins'] >= 5]
+
+    return base, hierarchy_data, yearly_performance, nationality_wins, team_driver_wins
+
+def get_sprint_analysis():
+    """
+    Analyzes sprint race results using sprint_results.csv.
+    """
+    sprint = load_data('sprint_results.csv')
+    races = load_data('races.csv')
+    drivers = load_data('drivers.csv')
+    constructors = load_data('constructors.csv')
+
+    if any(df is None for df in [sprint, races, drivers, constructors]):
+        return None
+
+    for col in ['positionOrder', 'points', 'grid']:
+        sprint[col] = pd.to_numeric(sprint[col], errors='coerce')
+
+    merged = pd.merge(sprint, races[['raceId', 'year', 'name']], on='raceId')
+    merged = pd.merge(merged, drivers[['driverId', 'surname', 'nationality']], on='driverId')
+    merged = pd.merge(merged, constructors[['constructorId', 'name']], on='constructorId', suffixes=('_race', '_team'))
+    return merged
+
+def get_perfect_storm_analysis():
+    """
+    Analyzes 'The Perfect Storm': When everything goes right (or wrong).
+    """
+    results = load_data('results.csv')
+    races = load_data('races.csv')
+    drivers = load_data('drivers.csv')
+    constructors = load_data('constructors.csv')
+    qualifying = load_data('qualifying.csv')
+    status = load_data('status.csv')
+
+    if any(df is None for df in [results, races, drivers, constructors, qualifying, status]):
+        return None
+
+    base = pd.merge(results, races[['raceId', 'year', 'name']], on='raceId')
+    base = pd.merge(base, drivers[['driverId', 'surname', 'nationality']], on='driverId')
+    base = pd.merge(base, constructors[['constructorId', 'name']], on='constructorId', suffixes=('_race', '_team'))
+    base = pd.merge(base, qualifying[['raceId', 'driverId', 'position']], on=['raceId', 'driverId'], how='left', suffixes=('', '_quali'))
+    base = pd.merge(base, status[['statusId', 'status']], on='statusId')
+
+    base['positions_gained'] = base['grid'] - base['positionOrder']
+    base['position'] = pd.to_numeric(base['position'], errors='coerce')
+    base['quali_gap'] = base['position'] - 1
+
+    perfect_performances = base[(base['grid'] <= 5) & (base['positionOrder'] <= 3) & (base['positions_gained'] > 0)].copy()
+    perfect_performances['perfection_score'] = (
+        (5 - perfect_performances['grid']) * 0.3 +
+        (4 - perfect_performances['positionOrder']) * 0.4 +
+        (perfect_performances['positions_gained'] / 10) * 0.3
+    )
+
+    disasters = base[(base['grid'] <= 10) & (base['positionOrder'] > 15)].copy()
+    disasters['disaster_score'] = (
+        (10 - disasters['grid']) * 0.4 + (disasters['positionOrder'] / 20) * 0.6
+    )
+
+    dnf_data = base[base['positionOrder'].isna() | (base['status'] != 'Finished')].copy()
+    dnf_causes = dnf_data.groupby('status').size().reset_index()
+    dnf_causes.columns = ['cause', 'count']
+    dnf_causes = dnf_causes.nlargest(15, 'count')
+
+    mean_gain = base['positions_gained'].mean()
+    std_gain = base['positions_gained'].std()
+    base['z_score'] = (base['positions_gained'] - mean_gain) / std_gain
+    outliers = base[abs(base['z_score']) > 2.5].copy()
+
+    return base, perfect_performances, disasters, dnf_causes, outliers
+
 def get_circuit_dna_analysis():
     """
     Analyzes 'The Circuit DNA': Which tracks favor which drivers/teams?
