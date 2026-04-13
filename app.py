@@ -362,8 +362,64 @@ elif page == "🏆 Championship Battle":
         st.error("Could not load Championship Battle data.")
 
 elif page == "⚡ Sprint Races":
-    st.header("⚡ Sprint Races")
-    st.write("Coming soon.")
+    st.header("⚡ Sprint Races: The New Format Analyzed")
+    st.write("F1 introduced sprint races in 2021. Here's who dominates them, and whether sprint form translates to race form.")
+
+    sprint_df = data_loader.get_sprint_analysis()
+
+    if sprint_df is not None and not sprint_df.empty:
+        sprint_df = sprint_df[(sprint_df['year'] >= year_range[0]) & (sprint_df['year'] <= year_range[1])]
+
+        if sprint_df.empty:
+            st.warning("No sprint race data for the selected year range. Sprint races began in 2021 — adjust the Global Filters.")
+        else:
+            available_sprint_years = sorted(sprint_df['year'].unique())
+            st.info(f"Sprint data available for seasons: {', '.join(map(str, available_sprint_years))}")
+
+            st.subheader("1. Sprint Race Winners")
+            sprint_wins = sprint_df[sprint_df['positionOrder'] == 1]['surname'].value_counts().reset_index()
+            sprint_wins.columns = ['Driver', 'Sprint Wins']
+            fig_wins = px.bar(sprint_wins, x='Driver', y='Sprint Wins',
+                              title="Sprint Race Wins by Driver",
+                              color='Sprint Wins', color_continuous_scale='Viridis')
+            st.plotly_chart(fig_wins, width="stretch")
+
+            st.subheader("2. Sprint Points by Constructor")
+            team_pts = sprint_df.groupby('name_team')['points'].sum().reset_index().sort_values('points', ascending=False)
+            fig_team = px.bar(team_pts, x='name_team', y='points',
+                              title="Total Sprint Points by Constructor",
+                              labels={'points': 'Sprint Points', 'name_team': 'Constructor'},
+                              color='points', color_continuous_scale='Plasma')
+            st.plotly_chart(fig_team, width="stretch")
+
+            st.subheader("3. Sprint Grid Position vs. Finish Position")
+            valid = sprint_df.dropna(subset=['grid', 'positionOrder'])
+            valid = valid[(valid['grid'] > 0) & (valid['positionOrder'] > 0) & (valid['positionOrder'] <= 20)]
+            fig_scatter = px.scatter(valid, x='grid', y='positionOrder', color='name_team',
+                                     hover_data=['surname', 'year', 'name_race'],
+                                     title="Sprint Starting vs. Finishing Position",
+                                     opacity=0.7)
+            fig_scatter.update_yaxes(autorange="reversed")
+            fig_scatter.update_xaxes(autorange="reversed")
+            st.plotly_chart(fig_scatter, width="stretch")
+
+            st.subheader("4. Sprint Points Timeline by Year")
+            yearly_sprint = sprint_df.groupby(['year', 'name_team'])['points'].sum().reset_index()
+            top_t = yearly_sprint.groupby('name_team')['points'].sum().nlargest(6).index
+            fig_timeline = px.line(yearly_sprint[yearly_sprint['name_team'].isin(top_t)],
+                                   x='year', y='points', color='name_team',
+                                   title="Sprint Points by Season (Top 6 Constructors)", markers=True)
+            st.plotly_chart(fig_timeline, width="stretch")
+
+            st.subheader("5. Sprint Comeback Artists")
+            valid['pos_gained'] = valid['grid'] - valid['positionOrder']
+            gainers = valid.groupby('surname')['pos_gained'].mean().reset_index().sort_values('pos_gained', ascending=False).head(15)
+            fig_gain = px.bar(gainers, x='surname', y='pos_gained',
+                              title="Average Position Gain in Sprint Races (Top 15)",
+                              color='pos_gained', color_continuous_scale='RdYlGn')
+            st.plotly_chart(fig_gain, width="stretch")
+    else:
+        st.warning("No sprint race data available. Sprint races were introduced in 2021.")
 
 elif page == "THE WINNING FORMULA 🏆":
     st.header("🏆 The Winning Formula")
