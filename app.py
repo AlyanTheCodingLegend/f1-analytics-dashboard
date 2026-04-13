@@ -422,8 +422,39 @@ elif page == "⚡ Sprint Races":
         st.warning("No sprint race data available. Sprint races were introduced in 2021.")
 
 elif page == "THE WINNING FORMULA 🏆":
-    st.header("🏆 The Winning Formula")
-    st.write("Coming soon.")
+    st.header("🏆 The Winning Formula: Unified Analytics (2011-2023)")
+    st.write("We integrated Qualifying, Pit Stops, and Lap Telemetry to answer the ultimate question: **What actually wins races?**")
+
+    unified_df = data_loader.get_unified_data()
+
+    if unified_df is not None:
+        st.subheader("1. The Recipe for Victory (Correlation Analysis)")
+        corr_cols = ['positionOrder', 'quali_pos', 'stops', 'total_pit_time', 'lap_time_std', 'points']
+        corr_matrix = unified_df[corr_cols].corr()
+        fig_corr = px.imshow(corr_matrix, text_auto=True, color_continuous_scale='RdBu_r',
+                             title="Correlation Matrix: Success Factors")
+        st.plotly_chart(fig_corr, width="stretch")
+        st.info("💡 Strong **Negative** correlation with 'positionOrder' is GOOD — means better finish position.")
+
+        st.subheader("2. Speed vs. Consistency vs. Strategy")
+        top_finishers = unified_df[unified_df['positionOrder'] <= 10]
+        fig_3d = px.scatter_3d(top_finishers, x='quali_pos', y='lap_time_std', z='positionOrder',
+                               color='stops', size='points',
+                               hover_data=['surname', 'year', 'name_driver'],
+                               title="Multi-Dimensional Analysis of Top 10 Finishes")
+        fig_3d.update_layout(scene=dict(zaxis=dict(autorange="reversed"), xaxis=dict(autorange="reversed")))
+        st.plotly_chart(fig_3d, width="stretch")
+
+        st.subheader("3. Importance of Pole Position")
+        winners = unified_df[unified_df['positionOrder'] == 1]
+        win_dist = winners['grid'].value_counts().reset_index()
+        win_dist.columns = ['Starting Position', 'Wins']
+        fig_bar = px.bar(win_dist, x='Starting Position', y='Wins',
+                         title="Where do Winners Start?",
+                         color='Wins', color_continuous_scale='Viridis')
+        st.plotly_chart(fig_bar, width="stretch")
+    else:
+        st.error("Could not load Unified Data. Please check dataset integrity.")
 
 elif page == "🎯 THE UNDERDOG EFFECT":
     st.header("🎯 The Underdog Effect: Can Strategy Overcome Speed?")
