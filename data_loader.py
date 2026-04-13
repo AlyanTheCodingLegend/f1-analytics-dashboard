@@ -282,6 +282,51 @@ def get_geography_data():
 
     return win_counts
 
+def get_circuit_dna_analysis():
+    """
+    Analyzes 'The Circuit DNA': Which tracks favor which drivers/teams?
+    """
+    results = load_data('results.csv')
+    races = load_data('races.csv')
+    circuits = load_data('circuits.csv')
+    drivers = load_data('drivers.csv')
+    constructors = load_data('constructors.csv')
+
+    if any(df is None for df in [results, races, circuits, drivers, constructors]):
+        return None
+
+    base = pd.merge(results, races[['raceId', 'year', 'name', 'circuitId']], on='raceId')
+    base = pd.merge(base, circuits[['circuitId', 'name', 'location', 'country', 'lat', 'lng', 'alt']], on='circuitId', suffixes=('_race', '_circuit'))
+    base = pd.merge(base, drivers[['driverId', 'surname', 'nationality']], on='driverId')
+    base = pd.merge(base, constructors[['constructorId', 'name']], on='constructorId', suffixes=('_driver', '_team'))
+
+    def categorize_circuit(row):
+        alt = row['alt'] if pd.notna(row['alt']) else 0
+        if alt > 1000: return 'High Altitude'
+        elif 'Street' in row['name_circuit'] or row['name_circuit'] in ['Circuit de Monaco', 'Marina Bay Street Circuit']: return 'Street Circuit'
+        elif row['country'] in ['UK', 'Italy', 'Belgium', 'Germany', 'France'] and row['year'] < 2000: return 'Classic European'
+        elif row['year'] > 2000 and row['country'] in ['UAE', 'Bahrain', 'China', 'Singapore', 'Korea', 'India']: return 'Modern Tilke'
+        else: return 'Traditional'
+
+    base['circuit_type'] = base.apply(categorize_circuit, axis=1)
+    base['fastestLapSpeed'] = pd.to_numeric(base['fastestLapSpeed'], errors='coerce')
+
+    circuit_stats = base.groupby('name_circuit').agg({
+        'positionOrder': ['mean', 'std'], 'fastestLapSpeed': 'mean', 'raceId': 'count'
+    }).reset_index()
+    circuit_stats.columns = ['circuit', 'avg_finish_pos', 'finish_variance', 'avg_speed', 'races_held']
+    circuit_stats = circuit_stats[circuit_stats['races_held'] >= 10]
+
+    driver_circuit_perf = base.groupby(['surname', 'circuit_type']).agg({
+        'positionOrder': 'mean', 'raceId': 'count'
+    }).reset_index()
+    driver_circuit_perf.columns = ['driver', 'circuit_type', 'avg_position', 'races']
+    driver_circuit_perf = driver_circuit_perf[driver_circuit_perf['races'] >= 5]
+
+    driver_specialties = driver_circuit_perf.loc[driver_circuit_perf.groupby('driver')['avg_position'].idxmin()]
+
+    return base, circuit_stats, driver_circuit_perf, driver_specialties
+
 def get_economics_analysis():
     """
     Analyzes 'The Million Dollar Lap': Economics of F1 Performance.

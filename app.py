@@ -529,8 +529,43 @@ elif page == "🧒 THE ROOKIE PARADOX":
         st.error("Could not load Rookie Paradox data.")
 
 elif page == "🏎️ THE CIRCUIT DNA":
-    st.header("🏎️ The Circuit DNA")
-    st.write("Coming soon.")
+    st.header("🏎️ The Circuit DNA: Where Champions Are Made")
+    st.write("""**The Hidden Truth**: Not all circuits are created equal.
+    Some tracks favor raw speed, others reward precision. Let's decode the DNA of each circuit.""")
+
+    result = data_loader.get_circuit_dna_analysis()
+
+    if result is not None:
+        base, circuit_stats, driver_circuit_perf, driver_specialties = result
+
+        st.subheader("1. The Difficulty Index: Hardest Tracks to Master")
+        hardest_circuits = circuit_stats.nlargest(15, 'finish_variance')[['circuit', 'finish_variance', 'avg_speed', 'races_held']]
+        fig_difficulty = px.bar(hardest_circuits, x='circuit', y='finish_variance',
+                                title="Most Unpredictable Circuits (High Variance = Difficult)",
+                                color='finish_variance', color_continuous_scale='Reds',
+                                hover_data=['avg_speed', 'races_held'])
+        st.plotly_chart(fig_difficulty, width="stretch")
+
+        st.subheader("2. Speed Demons vs. Precision Palaces")
+        fig_scatter = px.scatter(circuit_stats, x='avg_speed', y='finish_variance', size='races_held',
+                                 hover_data=['circuit'], title="Circuit Characteristics: Speed vs. Difficulty",
+                                 labels={'avg_speed': 'Average Speed (km/h)', 'finish_variance': 'Unpredictability'},
+                                 text='circuit')
+        median_speed = circuit_stats['avg_speed'].median()
+        median_variance = circuit_stats['finish_variance'].median()
+        fig_scatter.add_vline(x=median_speed, line_dash="dash", line_color="gray")
+        fig_scatter.add_hline(y=median_variance, line_dash="dash", line_color="gray")
+        st.plotly_chart(fig_scatter, width="stretch")
+
+        st.subheader("3. The Specialists: Who Dominates Which Track Type?")
+        top_drivers = driver_circuit_perf.groupby('driver')['races'].sum().nlargest(15).index
+        specialist_data = driver_circuit_perf[driver_circuit_perf['driver'].isin(top_drivers)]
+        specialist_pivot = specialist_data.pivot(index='driver', columns='circuit_type', values='avg_position')
+        fig_specialist = px.imshow(specialist_pivot, title="Driver Performance by Circuit Type (Lower = Better)",
+                                   color_continuous_scale='RdYlGn_r', text_auto='.1f')
+        st.plotly_chart(fig_specialist, width="stretch")
+    else:
+        st.error("Could not load Circuit DNA data.")
 
 elif page == "💰 THE MILLION DOLLAR LAP":
     st.header("💰 The Million Dollar Lap: Economics of F1 Performance")
