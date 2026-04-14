@@ -61,7 +61,9 @@ with st.sidebar.expander("🔍 Global Filters", expanded=False):
     selected_circuits_global = st.multiselect("Circuits", _circuit_opts,
                                               help="Leave empty to include all circuits")
 
-    st.caption("ℹ️ Filters apply to pages that support them (Evolution of Speed, Dominance Dynasties, Championship Battle, Sprint Races).")
+    st.caption("ℹ️ Year range applies globally. Driver/Team/Circuit filters apply to pages that load combined race data.")
+    if selected_drivers_global or selected_teams_global or selected_circuits_global:
+        st.sidebar.success(f"Filters active: {len(selected_drivers_global)} drivers, {len(selected_teams_global)} teams, {len(selected_circuits_global)} circuits")
 
 # Page routing
 if page == "Home":
