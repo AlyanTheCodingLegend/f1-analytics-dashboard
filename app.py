@@ -753,6 +753,46 @@ elif page == "🌈 THE RAINBOW ROAD":
                                  title="F1 Wins by Driver Nationality",
                                  color='wins', color_continuous_scale='Turbo', template='plotly_dark')
         st.plotly_chart(fig_polar, width="stretch")
+
+        st.subheader("5. 🔀 The Sankey Flow: Team → Driver Wins")
+        top_combos = team_driver_wins.nlargest(30, 'wins')
+        teams_list = top_combos['name_team'].unique().tolist()
+        drivers_list = top_combos['surname'].unique().tolist()
+        all_nodes = teams_list + drivers_list
+        node_indices = {n: i for i, n in enumerate(all_nodes)}
+        sankey_source = [node_indices[t] for t in top_combos['name_team']]
+        sankey_target = [node_indices[d] + len(teams_list) for d in top_combos['surname']]
+        sankey_values = top_combos['wins'].tolist()
+        fig_sankey = go.Figure(go.Sankey(
+            node=dict(pad=15, thickness=20,
+                      label=all_nodes,
+                      color=["#e63946"] * len(teams_list) + ["#457b9d"] * len(drivers_list)),
+            link=dict(source=sankey_source, target=sankey_target, value=sankey_values,
+                      color='rgba(150,200,250,0.4)')
+        ))
+        fig_sankey.update_layout(title_text="Win Flow: Teams to Drivers (Top 30 Combos)", font_size=11)
+        st.plotly_chart(fig_sankey, width="stretch")
+
+        st.subheader("6. 🎻 The Violin of Points Distribution")
+        top_10_teams = base.groupby('name_team')['points'].sum().nlargest(10).index.tolist()
+        violin_data = base[base['name_team'].isin(top_10_teams)]
+        fig_violin = px.violin(violin_data, x='name_team', y='points',
+                               color='name_team', box=True, points='outliers',
+                               title="Points Distribution — Top 10 Teams All Time",
+                               color_discrete_sequence=px.colors.qualitative.Set3)
+        fig_violin.update_layout(showlegend=False, xaxis_tickangle=-30)
+        st.plotly_chart(fig_violin, width="stretch")
+
+        st.subheader("7. 🔮 3D Galaxy: Wins × Points × Races")
+        driver_summary = base.groupby(['surname', 'nationality']).agg(
+            total_wins=('win', 'sum'), total_points=('points', 'sum'), total_races=('raceId', 'nunique')
+        ).reset_index()
+        driver_summary = driver_summary[driver_summary['total_races'] >= 20]
+        fig_galaxy = px.scatter_3d(driver_summary, x='total_races', y='total_points', z='total_wins',
+                                   color='nationality', size='total_wins', hover_name='surname',
+                                   title="Driver Galaxy: Races vs Points vs Wins",
+                                   color_discrete_sequence=px.colors.qualitative.Pastel)
+        st.plotly_chart(fig_galaxy, width="stretch")
     else:
         st.error("Could not load Rainbow Road data.")
 
