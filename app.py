@@ -709,8 +709,44 @@ elif page == "💰 THE MILLION DOLLAR LAP":
         st.error("Could not load Economics Analysis data.")
 
 elif page == "🦋 THE BUTTERFLY EFFECT":
-    st.header("🦋 The Butterfly Effect")
-    st.write("Coming soon.")
+    st.header("🦋 The Butterfly Effect: How One Lap Changes Everything")
+    st.write("A single fast lap in qualifying, a 2-second pit stop, perfect tire strategy — these micro-decisions cascade into race results.")
+
+    result = data_loader.get_butterfly_effect_analysis()
+
+    if result is not None:
+        base, dramatic_races, fastest_stops, lap_consistency = result
+
+        st.subheader("1. 🎭 Most Dramatic Races (2011-2023)")
+        fig_drama = px.bar(dramatic_races, x='race_name', y='drama_score', color='year',
+                           title="Races Ranked by Drama Score (position shuffle std dev)",
+                           color_continuous_scale='Plasma')
+        fig_drama.update_layout(xaxis_tickangle=-45)
+        st.plotly_chart(fig_drama, width="stretch")
+        st.caption("Higher drama score = more positions changed between grid and finish")
+
+        st.subheader("2. ⚡ Fastest Pit Stops in Modern F1")
+        st.dataframe(fastest_stops.sort_values('duration_seconds').head(20).reset_index(drop=True),
+                     use_container_width=True)
+
+        st.subheader("3. 🎯 Clutch Factor: Lap Consistency Leaders")
+        top_clutch = lap_consistency.nlargest(20, 'clutch_score')[['driver', 'year', 'race', 'avg_lap_time', 'lap_std', 'clutch_score']]
+        fig_clutch = px.scatter(top_clutch, x='avg_lap_time', y='lap_std', color='driver',
+                                size='clutch_score', hover_data=['year', 'race'],
+                                title="Lap Consistency: Lower std dev = more consistent",
+                                color_discrete_sequence=px.colors.qualitative.Safe)
+        st.plotly_chart(fig_clutch, width="stretch")
+
+        st.subheader("4. 📊 Grid vs. Finish: The Butterfly Scatter")
+        sample = base.sample(min(2000, len(base)), random_state=42)
+        fig_butterfly = px.density_heatmap(sample, x='grid', y='positionOrder',
+                                           title="Grid Position → Finish Position Density",
+                                           color_continuous_scale='Hot',
+                                           nbinsx=20, nbinsy=20)
+        fig_butterfly.update_layout(xaxis_title="Grid Position", yaxis_title="Finish Position")
+        st.plotly_chart(fig_butterfly, width="stretch")
+    else:
+        st.error("Could not load Butterfly Effect data. Please check dataset integrity.")
 
 elif page == "🌈 THE RAINBOW ROAD":
     st.header("🌈 The Rainbow Road: A Visual Journey Through F1 History")
@@ -797,5 +833,41 @@ elif page == "🌈 THE RAINBOW ROAD":
         st.error("Could not load Rainbow Road data.")
 
 elif page == "⛈️ THE PERFECT STORM":
-    st.header("⛈️ The Perfect Storm")
-    st.write("Coming soon.")
+    st.header("⛈️ The Perfect Storm: When Everything Goes Right (or Wrong)")
+    st.write("Perfect races are born when pole position, superior pace, flawless strategy, and a bit of luck align. Disasters follow the same formula — in reverse.")
+
+    result = data_loader.get_perfect_storm_analysis()
+
+    if result is not None:
+        base, perfect_performances, disasters, dnf_causes, outliers = result
+
+        st.subheader("1. 🌟 Perfect Performances Hall of Fame")
+        top_perfect = perfect_performances.nlargest(15, 'perfection_score')[
+            ['year', 'name_race', 'surname', 'name_team', 'grid', 'positionOrder', 'perfection_score']
+        ].reset_index(drop=True)
+        top_perfect.columns = ['Year', 'Race', 'Driver', 'Team', 'Grid', 'Finish', 'Perfection Score']
+        st.dataframe(top_perfect, use_container_width=True)
+
+        st.subheader("2. 💥 Disaster Board: Best Starters Who Finished Last")
+        top_disasters = disasters.nlargest(15, 'disaster_score')[
+            ['year', 'name_race', 'surname', 'name_team', 'grid', 'positionOrder', 'disaster_score']
+        ].reset_index(drop=True)
+        top_disasters.columns = ['Year', 'Race', 'Driver', 'Team', 'Grid', 'Finish', 'Disaster Score']
+        st.dataframe(top_disasters, use_container_width=True)
+
+        st.subheader("3. 🔧 DNF Causes: What Ends a Perfect Storm?")
+        fig_dnf = px.pie(dnf_causes, names='cause', values='count',
+                         title="DNF Causes Distribution",
+                         color_discrete_sequence=px.colors.qualitative.Bold)
+        st.plotly_chart(fig_dnf, width="stretch")
+
+        st.subheader("4. 📈 Statistical Outliers: The Wildest Results")
+        fig_outliers = px.scatter(outliers.head(200), x='grid', y='positionOrder',
+                                  color='z_score', size=abs(outliers['z_score'].head(200)),
+                                  hover_data=['surname', 'name_race', 'year'],
+                                  title="Extreme Outlier Performances (|z-score| > 2.5)",
+                                  color_continuous_scale='RdYlGn_r')
+        fig_outliers.update_layout(xaxis_title="Grid Position", yaxis_title="Finish Position")
+        st.plotly_chart(fig_outliers, width="stretch")
+    else:
+        st.error("Could not load Perfect Storm data. Please check dataset integrity.")
