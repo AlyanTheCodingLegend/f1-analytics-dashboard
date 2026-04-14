@@ -92,7 +92,7 @@ if page == "Home":
                           labels={'race_count': 'Races', 'year': 'Year'},
                           markers=True)
         fig_cal.update_traces(line_color='#e10600')
-        st.plotly_chart(fig_cal, width="stretch")
+        st.plotly_chart(fig_cal, use_container_width=True)
 
 elif page == "Evolution of Speed":
     st.header("🏎️ The Evolution of Speed")
@@ -110,7 +110,7 @@ elif page == "Evolution of Speed":
         fig_trend = px.line(max_speed_per_year, x='year', y='fastestLapSpeed',
                             title='Maximum Race Lap Speed Recorded by Year (km/h)',
                             markers=True, labels={'fastestLapSpeed': 'Speed (km/h)'})
-        st.plotly_chart(fig_trend, width="stretch")
+        st.plotly_chart(fig_trend, use_container_width=True)
         st.markdown("**Observation:** Notice the dips? These often correlate with regulation changes (e.g., V10 to V8 engines, aero restrictions).")
 
         st.subheader("Circuit Specific Analysis")
@@ -122,7 +122,7 @@ elif page == "Evolution of Speed":
                                  title='Max Speed Evolution by Circuit',
                                  trendline="lowess",
                                  labels={'fastestLapSpeed': 'Speed (km/h)'})
-        st.plotly_chart(fig_circuit, width="stretch")
+        st.plotly_chart(fig_circuit, use_container_width=True)
     else:
         st.error("Failed to load speed data. Please check the dataset.")
 
@@ -149,7 +149,7 @@ elif page == "Dominance Dynasties":
                            title='Constructor Dominance: Share of Championship Points per Year',
                            labels={'points_share': 'Share of Total Points (%)'},
                            category_orders={"Team": top_teams + ["Others"]})
-        st.plotly_chart(fig_area, width="stretch")
+        st.plotly_chart(fig_area, use_container_width=True)
 
         st.markdown("""
         **Key Dynasties Detected:**
@@ -179,7 +179,7 @@ elif page == "Dominance Dynasties":
                              title=f"{sel_season} Constructor Points — Race by Race",
                              labels={'cumulative_points': 'Cumulative Points', 'round': 'Round', 'name_team': 'Constructor'},
                              markers=True)
-            st.plotly_chart(fig_rr, width="stretch")
+            st.plotly_chart(fig_rr, use_container_width=True)
     else:
         st.error("Failed to load dominance data.")
 
@@ -195,10 +195,10 @@ elif page == "Geography of Victory":
                                 color_continuous_scale=px.colors.sequential.Plasma,
                                 title="Total F1 Wins by Country of Driver Origin",
                                 labels={'wins': 'Total Wins'})
-        st.plotly_chart(fig_map, width="stretch")
+        st.plotly_chart(fig_map, use_container_width=True)
 
         st.subheader("Leaderboard: Wins by Nation")
-        st.dataframe(geo_df.sort_values(by='wins', ascending=False).set_index('country')[['wins']], width="stretch")
+        st.dataframe(geo_df.sort_values(by='wins', ascending=False).set_index('country')[['wins']], use_container_width=True)
 
         st.markdown("""
         **Insights:**
@@ -236,7 +236,7 @@ elif page == "Advanced: Quali vs Race":
         fig_qvr.add_annotation(x=max_val-5, y=max_val-2, text="Quali Merchants (Lose Places)", showarrow=False, font=dict(color="red"))
         fig_qvr.update_yaxes(autorange="reversed")
         fig_qvr.update_xaxes(autorange="reversed")
-        st.plotly_chart(fig_qvr, width="stretch")
+        st.plotly_chart(fig_qvr, use_container_width=True)
         st.markdown("**Interpretation**: Drivers below/left of the dashed line consistently improve their position on race day. Above/right = Qualifying specialists who struggle on race day.")
 
 elif page == "Advanced: Reliability":
@@ -255,7 +255,7 @@ elif page == "Advanced: Reliability":
                              "Mechanical/Technical Failure": "#95a5a6",
                              "Disqualified": "#34495e"
                          })
-        st.plotly_chart(fig_rel, width="stretch")
+        st.plotly_chart(fig_rel, use_container_width=True)
         st.markdown("**Insight:** Note the massive gray block (Mechanical Failures) shrinking from the 1980s to the 2020s. Modern cars are engineering marvels of durability.")
 
 elif page == "Advanced: Teammate Wars":
@@ -296,7 +296,7 @@ elif page == "Advanced: Teammate Wars":
             'Wins': [stats['d1_wins'], stats['d2_wins']]
         })
         fig_comp = px.bar(comp_data, x='Driver', y=['Points', 'Wins'], barmode='group', title="Head-to-Head Stats")
-        st.plotly_chart(fig_comp, width="stretch")
+        st.plotly_chart(fig_comp, use_container_width=True)
     else:
         st.error("Data not found for these drivers.")
 
@@ -328,7 +328,7 @@ elif page == "🏆 Championship Battle":
                                  title=f"{selected_year} Drivers' Championship — Standings After Each Race",
                                  labels={'points': 'Cumulative Points', 'round': 'Race Round', 'surname': 'Driver'},
                                  markers=True)
-            st.plotly_chart(fig_battle, width="stretch")
+            st.plotly_chart(fig_battle, use_container_width=True)
             st.info("💡 Each point represents the standings *after* that race. Lines crossing = lead changes!")
 
             st.subheader("Final Season Standings")
@@ -338,7 +338,7 @@ elif page == "🏆 Championship Battle":
                                title=f"{selected_year} Final Driver Standings (Top 15)",
                                labels={'points': 'Championship Points', 'surname': 'Driver'},
                                color='points', color_continuous_scale='Plasma')
-            st.plotly_chart(fig_final, width="stretch")
+            st.plotly_chart(fig_final, use_container_width=True)
 
             st.subheader("Race Wins Tally")
             wins_data = year_data.groupby('surname')['wins'].max().reset_index()
@@ -348,7 +348,7 @@ elif page == "🏆 Championship Battle":
                                   title=f"{selected_year} Race Wins",
                                   labels={'wins': 'Wins', 'surname': 'Driver'},
                                   color='wins', color_continuous_scale='Reds')
-                st.plotly_chart(fig_wins, width="stretch")
+                st.plotly_chart(fig_wins, use_container_width=True)
 
             st.subheader("Gap to Championship Leader")
             leader_points = plot_data.groupby('round')['points'].max().reset_index().rename(columns={'points': 'leader_pts'})
@@ -358,7 +358,7 @@ elif page == "🏆 Championship Battle":
                               title=f"{selected_year} Points Gap to Championship Leader",
                               labels={'gap': 'Points Behind Leader', 'round': 'Race Round', 'surname': 'Driver'},
                               markers=True)
-            st.plotly_chart(fig_gap, width="stretch")
+            st.plotly_chart(fig_gap, use_container_width=True)
             st.info("💡 Closer to zero = closer to the title. Zero = leading the championship at that point.")
     else:
         st.error("Could not load Championship Battle data.")
@@ -384,7 +384,7 @@ elif page == "⚡ Sprint Races":
             fig_wins = px.bar(sprint_wins, x='Driver', y='Sprint Wins',
                               title="Sprint Race Wins by Driver",
                               color='Sprint Wins', color_continuous_scale='Viridis')
-            st.plotly_chart(fig_wins, width="stretch")
+            st.plotly_chart(fig_wins, use_container_width=True)
 
             st.subheader("2. Sprint Points by Constructor")
             team_pts = sprint_df.groupby('name_team')['points'].sum().reset_index().sort_values('points', ascending=False)
@@ -392,7 +392,7 @@ elif page == "⚡ Sprint Races":
                               title="Total Sprint Points by Constructor",
                               labels={'points': 'Sprint Points', 'name_team': 'Constructor'},
                               color='points', color_continuous_scale='Plasma')
-            st.plotly_chart(fig_team, width="stretch")
+            st.plotly_chart(fig_team, use_container_width=True)
 
             st.subheader("3. Sprint Grid Position vs. Finish Position")
             valid = sprint_df.dropna(subset=['grid', 'positionOrder'])
@@ -403,7 +403,7 @@ elif page == "⚡ Sprint Races":
                                      opacity=0.7)
             fig_scatter.update_yaxes(autorange="reversed")
             fig_scatter.update_xaxes(autorange="reversed")
-            st.plotly_chart(fig_scatter, width="stretch")
+            st.plotly_chart(fig_scatter, use_container_width=True)
 
             st.subheader("4. Sprint Points Timeline by Year")
             yearly_sprint = sprint_df.groupby(['year', 'name_team'])['points'].sum().reset_index()
@@ -411,7 +411,7 @@ elif page == "⚡ Sprint Races":
             fig_timeline = px.line(yearly_sprint[yearly_sprint['name_team'].isin(top_t)],
                                    x='year', y='points', color='name_team',
                                    title="Sprint Points by Season (Top 6 Constructors)", markers=True)
-            st.plotly_chart(fig_timeline, width="stretch")
+            st.plotly_chart(fig_timeline, use_container_width=True)
 
             st.subheader("5. Sprint Comeback Artists")
             valid['pos_gained'] = valid['grid'] - valid['positionOrder']
@@ -419,7 +419,7 @@ elif page == "⚡ Sprint Races":
             fig_gain = px.bar(gainers, x='surname', y='pos_gained',
                               title="Average Position Gain in Sprint Races (Top 15)",
                               color='pos_gained', color_continuous_scale='RdYlGn')
-            st.plotly_chart(fig_gain, width="stretch")
+            st.plotly_chart(fig_gain, use_container_width=True)
     else:
         st.warning("No sprint race data available. Sprint races were introduced in 2021.")
 
@@ -435,7 +435,7 @@ elif page == "THE WINNING FORMULA 🏆":
         corr_matrix = unified_df[corr_cols].corr()
         fig_corr = px.imshow(corr_matrix, text_auto=True, color_continuous_scale='RdBu_r',
                              title="Correlation Matrix: Success Factors")
-        st.plotly_chart(fig_corr, width="stretch")
+        st.plotly_chart(fig_corr, use_container_width=True)
         st.info("💡 Strong **Negative** correlation with 'positionOrder' is GOOD — means better finish position.")
 
         st.subheader("2. Speed vs. Consistency vs. Strategy")
@@ -445,7 +445,7 @@ elif page == "THE WINNING FORMULA 🏆":
                                hover_data=['surname', 'year', 'name_driver'],
                                title="Multi-Dimensional Analysis of Top 10 Finishes")
         fig_3d.update_layout(scene=dict(zaxis=dict(autorange="reversed"), xaxis=dict(autorange="reversed")))
-        st.plotly_chart(fig_3d, width="stretch")
+        st.plotly_chart(fig_3d, use_container_width=True)
 
         st.subheader("3. Importance of Pole Position")
         winners = unified_df[unified_df['positionOrder'] == 1]
@@ -454,7 +454,7 @@ elif page == "THE WINNING FORMULA 🏆":
         fig_bar = px.bar(win_dist, x='Starting Position', y='Wins',
                          title="Where do Winners Start?",
                          color='Wins', color_continuous_scale='Viridis')
-        st.plotly_chart(fig_bar, width="stretch")
+        st.plotly_chart(fig_bar, use_container_width=True)
     else:
         st.error("Could not load Unified Data. Please check dataset integrity.")
 
@@ -475,7 +475,7 @@ elif page == "🎯 THE UNDERDOG EFFECT":
                               title="Top 20 Single-Race Comebacks (2011-2023)",
                               color='positions_gained', color_continuous_scale='Viridis',
                               labels={'positions_gained': 'Positions Gained', 'surname': 'Driver'})
-        st.plotly_chart(fig_comeback, width="stretch")
+        st.plotly_chart(fig_comeback, use_container_width=True)
 
         st.subheader("2. Does Strategy Matter More for Underdogs?")
         fig_box = px.box(base, x='grid_category', y='positions_gained',
@@ -483,7 +483,7 @@ elif page == "🎯 THE UNDERDOG EFFECT":
                          category_orders={'grid_category': ['Front Row', 'Top 10', 'Midfield', 'Back Markers']},
                          color='grid_category',
                          labels={'positions_gained': 'Positions Gained', 'grid_category': 'Starting Position'})
-        st.plotly_chart(fig_box, width="stretch")
+        st.plotly_chart(fig_box, use_container_width=True)
 
         st.subheader("3. The Underdog Hall of Fame")
         underdog_stats = underdogs.groupby('surname').agg({
@@ -495,7 +495,7 @@ elif page == "🎯 THE UNDERDOG EFFECT":
         fig_underdog = px.scatter(underdog_stats, x='Avg Positions Gained', y='Strategy Score',
                                   size='Underdog Races', hover_data=['Driver', 'Avg Stops'],
                                   title="The Strategic Geniuses (Min. 5 Underdog Races)", text='Driver')
-        st.plotly_chart(fig_underdog, width="stretch")
+        st.plotly_chart(fig_underdog, use_container_width=True)
 
         st.subheader("4. The Pit Stop Gamble")
         back_starters = base[base['grid'] > 10].copy()
@@ -504,7 +504,7 @@ elif page == "🎯 THE UNDERDOG EFFECT":
         fig_pit = px.line(pit_analysis, x='stops', y='positions_gained',
                           title="Average Position Gain vs. Number of Pit Stops (Started 11th+)",
                           markers=True, labels={'stops': 'Number of Pit Stops', 'positions_gained': 'Avg Positions Gained'})
-        st.plotly_chart(fig_pit, width="stretch")
+        st.plotly_chart(fig_pit, use_container_width=True)
     else:
         st.error("Could not load Underdog Analysis data.")
 
@@ -526,7 +526,7 @@ elif page == "⚰️ THE CONSTRUCTOR'S CURSE":
                                 labels={'market_share': 'Market Share (%)', 'year': 'Year', 'constructor': 'Team'},
                                 markers=True)
         fig_lifecycle.add_hline(y=20, line_dash="dash", line_color="red", annotation_text="Dominance Threshold (20%)")
-        st.plotly_chart(fig_lifecycle, width="stretch")
+        st.plotly_chart(fig_lifecycle, use_container_width=True)
 
         st.subheader("2. The Warning Signs of Decline")
         recent_dynasties = dynasty_data[dynasty_data['year'] >= 2010]
@@ -535,7 +535,7 @@ elif page == "⚰️ THE CONSTRUCTOR'S CURSE":
                                  title="Decline Warning Signals (2010-2023)",
                                  color_continuous_scale='RdYlGn_r',
                                  labels={'decline_score': 'Warning Level', 'market_share': 'Market Share'})
-        st.plotly_chart(fig_decline, width="stretch")
+        st.plotly_chart(fig_decline, use_container_width=True)
 
         st.subheader("3. How Fast Do Dynasties Fall?")
         collapse_analysis = []
@@ -557,7 +557,7 @@ elif page == "⚰️ THE CONSTRUCTOR'S CURSE":
                                   hover_data=['Peak Year', 'Collapse Year'],
                                   title="Time from Peak Dominance to Irrelevance",
                                   color='Years to Collapse', color_continuous_scale='Reds')
-            st.plotly_chart(fig_collapse, width="stretch")
+            st.plotly_chart(fig_collapse, use_container_width=True)
             st.metric("Average Collapse Duration", f"{collapse_df['Years to Collapse'].mean():.1f} years")
 
         st.subheader("4. Who's Next to Fall?")
@@ -570,7 +570,7 @@ elif page == "⚰️ THE CONSTRUCTOR'S CURSE":
                              title="Current Dynasty Health Check (2021-2023 Average)",
                              color_continuous_scale='RdYlGn_r',
                              labels={'market_share': 'Avg Market Share (%)', 'constructor': 'Team', 'decline_score': 'Risk Level'})
-        st.plotly_chart(fig_current, width="stretch")
+        st.plotly_chart(fig_current, use_container_width=True)
     else:
         st.error("Could not load Dynasty Analysis data.")
 
@@ -591,7 +591,7 @@ elif page == "🧒 THE ROOKIE PARADOX":
                          labels={'positionOrder': 'Avg Finish Position', 'age_group': 'Age Group'},
                          color='positionOrder', color_continuous_scale='RdYlGn_r')
         fig_age.update_yaxes(autorange="reversed")
-        st.plotly_chart(fig_age, width="stretch")
+        st.plotly_chart(fig_age, use_container_width=True)
         st.success(f"🎯 **Peak Performance Age**: {age_performance.iloc[0]['age_group']}")
 
         st.subheader("2. The Learning Curve: Experience vs. Results")
@@ -603,7 +603,7 @@ elif page == "🧒 THE ROOKIE PARADOX":
                                title="The Learning Curve: Performance by Experience Level",
                                labels={'positionOrder': 'Avg Finish Position', 'experience_level': 'Experience'}, markers=True)
         fig_learning.update_yaxes(autorange="reversed")
-        st.plotly_chart(fig_learning, width="stretch")
+        st.plotly_chart(fig_learning, use_container_width=True)
 
         st.subheader("3. The Podium Probability Matrix")
         age_order = ['Young Gun (<23)', 'Prime (23-27)', 'Experienced (28-32)', 'Veteran (33-37)', 'Elder (38+)']
@@ -613,7 +613,7 @@ elif page == "🧒 THE ROOKIE PARADOX":
         podium_pivot = podium_pivot.reindex(columns=exp_order)
         fig_matrix = px.imshow(podium_pivot, title="Podium Probability by Age and Experience (%)",
                                color_continuous_scale='YlOrRd', text_auto='.2%')
-        st.plotly_chart(fig_matrix, width="stretch")
+        st.plotly_chart(fig_matrix, use_container_width=True)
     else:
         st.error("Could not load Rookie Paradox data.")
 
@@ -633,7 +633,7 @@ elif page == "🏎️ THE CIRCUIT DNA":
                                 title="Most Unpredictable Circuits (High Variance = Difficult)",
                                 color='finish_variance', color_continuous_scale='Reds',
                                 hover_data=['avg_speed', 'races_held'])
-        st.plotly_chart(fig_difficulty, width="stretch")
+        st.plotly_chart(fig_difficulty, use_container_width=True)
 
         st.subheader("2. Speed Demons vs. Precision Palaces")
         fig_scatter = px.scatter(circuit_stats, x='avg_speed', y='finish_variance', size='races_held',
@@ -644,7 +644,7 @@ elif page == "🏎️ THE CIRCUIT DNA":
         median_variance = circuit_stats['finish_variance'].median()
         fig_scatter.add_vline(x=median_speed, line_dash="dash", line_color="gray")
         fig_scatter.add_hline(y=median_variance, line_dash="dash", line_color="gray")
-        st.plotly_chart(fig_scatter, width="stretch")
+        st.plotly_chart(fig_scatter, use_container_width=True)
 
         st.subheader("3. The Specialists: Who Dominates Which Track Type?")
         top_drivers = driver_circuit_perf.groupby('driver')['races'].sum().nlargest(15).index
@@ -652,7 +652,7 @@ elif page == "🏎️ THE CIRCUIT DNA":
         specialist_pivot = specialist_data.pivot(index='driver', columns='circuit_type', values='avg_position')
         fig_specialist = px.imshow(specialist_pivot, title="Driver Performance by Circuit Type (Lower = Better)",
                                    color_continuous_scale='RdYlGn_r', text_auto='.1f')
-        st.plotly_chart(fig_specialist, width="stretch")
+        st.plotly_chart(fig_specialist, use_container_width=True)
     else:
         st.error("Could not load Circuit DNA data.")
 
@@ -676,7 +676,7 @@ elif page == "💰 THE MILLION DOLLAR LAP":
                                 title="Most Efficient Teams (2014-2023): Points Per Race",
                                 color='points_per_race', color_continuous_scale='Viridis',
                                 hover_data=['win_rate', 'races'])
-        st.plotly_chart(fig_efficiency, width="stretch")
+        st.plotly_chart(fig_efficiency, use_container_width=True)
 
         st.subheader("2. The Dominance Timeline: Who Ruled Each Era?")
         major_teams = ['Ferrari', 'McLaren', 'Red Bull', 'Mercedes', 'Williams', 'Renault']
@@ -684,7 +684,7 @@ elif page == "💰 THE MILLION DOLLAR LAP":
         fig_timeline = px.line(dominance_data, x='year', y='dominance_score', color='team',
                                title="Team Dominance Score Over Time (1950-2023)",
                                labels={'dominance_score': 'Dominance Score', 'year': 'Year'}, markers=True)
-        st.plotly_chart(fig_timeline, width="stretch")
+        st.plotly_chart(fig_timeline, use_container_width=True)
 
         st.subheader("3. The Value Drivers: Best ROI Per Career")
         top_value = driver_value.nlargest(20, 'points_per_race')
@@ -692,14 +692,14 @@ elif page == "💰 THE MILLION DOLLAR LAP":
                                hover_data=['driver', 'team', 'career_length'],
                                title="Driver Value: Points Per Race vs. Career Length",
                                color='wins', color_continuous_scale='Reds', text='driver')
-        st.plotly_chart(fig_value, width="stretch")
+        st.plotly_chart(fig_value, use_container_width=True)
 
         st.subheader("4. The Win Rate Hierarchy")
         recent_win_rates = recent_teams.groupby('team')['win_rate'].mean().reset_index().nlargest(10, 'win_rate')
         fig_winrate = px.bar(recent_win_rates, x='team', y='win_rate',
                              title="Average Win Rate by Team (2014-2023)",
                              color='win_rate', color_continuous_scale='Greens')
-        st.plotly_chart(fig_winrate, width="stretch")
+        st.plotly_chart(fig_winrate, use_container_width=True)
 
         st.subheader("5. The Championship Math")
         champions = team_yearly.loc[team_yearly.groupby('year')['total_points'].idxmax()]
@@ -724,7 +724,7 @@ elif page == "🦋 THE BUTTERFLY EFFECT":
                            title="Races Ranked by Drama Score (position shuffle std dev)",
                            color_continuous_scale='Plasma')
         fig_drama.update_layout(xaxis_tickangle=-45)
-        st.plotly_chart(fig_drama, width="stretch")
+        st.plotly_chart(fig_drama, use_container_width=True)
         st.caption("Higher drama score = more positions changed between grid and finish")
 
         st.subheader("2. ⚡ Fastest Pit Stops in Modern F1")
@@ -737,7 +737,7 @@ elif page == "🦋 THE BUTTERFLY EFFECT":
                                 size='clutch_score', hover_data=['year', 'race'],
                                 title="Lap Consistency: Lower std dev = more consistent",
                                 color_discrete_sequence=px.colors.qualitative.Safe)
-        st.plotly_chart(fig_clutch, width="stretch")
+        st.plotly_chart(fig_clutch, use_container_width=True)
 
         st.subheader("4. 📊 Grid vs. Finish: The Butterfly Scatter")
         sample = base.sample(min(2000, len(base)), random_state=42)
@@ -746,7 +746,7 @@ elif page == "🦋 THE BUTTERFLY EFFECT":
                                            color_continuous_scale='Hot',
                                            nbinsx=20, nbinsy=20)
         fig_butterfly.update_layout(xaxis_title="Grid Position", yaxis_title="Finish Position")
-        st.plotly_chart(fig_butterfly, width="stretch")
+        st.plotly_chart(fig_butterfly, use_container_width=True)
     else:
         st.error("Could not load Butterfly Effect data. Please check dataset integrity.")
 
@@ -765,7 +765,7 @@ elif page == "🌈 THE RAINBOW ROAD":
                                    title="F1 Wins Hierarchy: Decades → Teams → Drivers",
                                    color='decade_label', color_discrete_sequence=px.colors.qualitative.Vivid)
         fig_sunburst.update_traces(textinfo='label+percent parent')
-        st.plotly_chart(fig_sunburst, width="stretch")
+        st.plotly_chart(fig_sunburst, use_container_width=True)
 
         st.subheader("2. 🗺️ The Treemap of Dominance")
         team_points = base.groupby(['name_team', 'decade_label'])['points'].sum().reset_index()
@@ -773,7 +773,7 @@ elif page == "🌈 THE RAINBOW ROAD":
         fig_treemap = px.treemap(team_points, path=['decade_label', 'name_team'], values='points',
                                  title="Team Dominance Treemap: Bigger = More Points",
                                  color='points', color_continuous_scale='Rainbow')
-        st.plotly_chart(fig_treemap, width="stretch")
+        st.plotly_chart(fig_treemap, use_container_width=True)
 
         st.subheader("3. 🎬 The Animated Racing Timeline")
         top_teams = yearly_performance.groupby('team')['total_points'].sum().nlargest(10).index.tolist()
@@ -784,13 +784,13 @@ elif page == "🌈 THE RAINBOW ROAD":
                                   hover_name='team', title="Team Performance Evolution (1950-2023)",
                                   range_x=[0, 30], range_y=[0, 20],
                                   color_discrete_sequence=px.colors.qualitative.Bold)
-        st.plotly_chart(fig_animated, width="stretch")
+        st.plotly_chart(fig_animated, use_container_width=True)
 
         st.subheader("4. 🌍 The Polar Chart of Nationality")
         fig_polar = px.bar_polar(nationality_wins, r='wins', theta='nationality',
                                  title="F1 Wins by Driver Nationality",
                                  color='wins', color_continuous_scale='Turbo', template='plotly_dark')
-        st.plotly_chart(fig_polar, width="stretch")
+        st.plotly_chart(fig_polar, use_container_width=True)
 
         st.subheader("5. 🔀 The Sankey Flow: Team → Driver Wins")
         top_combos = team_driver_wins.nlargest(30, 'wins')
@@ -809,7 +809,7 @@ elif page == "🌈 THE RAINBOW ROAD":
                       color='rgba(150,200,250,0.4)')
         ))
         fig_sankey.update_layout(title_text="Win Flow: Teams to Drivers (Top 30 Combos)", font_size=11)
-        st.plotly_chart(fig_sankey, width="stretch")
+        st.plotly_chart(fig_sankey, use_container_width=True)
 
         st.subheader("6. 🎻 The Violin of Points Distribution")
         top_10_teams = base.groupby('name_team')['points'].sum().nlargest(10).index.tolist()
@@ -819,7 +819,7 @@ elif page == "🌈 THE RAINBOW ROAD":
                                title="Points Distribution — Top 10 Teams All Time",
                                color_discrete_sequence=px.colors.qualitative.Set3)
         fig_violin.update_layout(showlegend=False, xaxis_tickangle=-30)
-        st.plotly_chart(fig_violin, width="stretch")
+        st.plotly_chart(fig_violin, use_container_width=True)
 
         st.subheader("7. 🔮 3D Galaxy: Wins × Points × Races")
         driver_summary = base.groupby(['surname', 'nationality']).agg(
@@ -830,7 +830,7 @@ elif page == "🌈 THE RAINBOW ROAD":
                                    color='nationality', size='total_wins', hover_name='surname',
                                    title="Driver Galaxy: Races vs Points vs Wins",
                                    color_discrete_sequence=px.colors.qualitative.Pastel)
-        st.plotly_chart(fig_galaxy, width="stretch")
+        st.plotly_chart(fig_galaxy, use_container_width=True)
     else:
         st.error("Could not load Rainbow Road data.")
 
@@ -861,7 +861,7 @@ elif page == "⛈️ THE PERFECT STORM":
         fig_dnf = px.pie(dnf_causes, names='cause', values='count',
                          title="DNF Causes Distribution",
                          color_discrete_sequence=px.colors.qualitative.Bold)
-        st.plotly_chart(fig_dnf, width="stretch")
+        st.plotly_chart(fig_dnf, use_container_width=True)
 
         st.subheader("4. 📈 Statistical Outliers: The Wildest Results")
         fig_outliers = px.scatter(outliers.head(200), x='grid', y='positionOrder',
@@ -870,6 +870,6 @@ elif page == "⛈️ THE PERFECT STORM":
                                   title="Extreme Outlier Performances (|z-score| > 2.5)",
                                   color_continuous_scale='RdYlGn_r')
         fig_outliers.update_layout(xaxis_title="Grid Position", yaxis_title="Finish Position")
-        st.plotly_chart(fig_outliers, width="stretch")
+        st.plotly_chart(fig_outliers, use_container_width=True)
     else:
         st.error("Could not load Perfect Storm data. Please check dataset integrity.")
