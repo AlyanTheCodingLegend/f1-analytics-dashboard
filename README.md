@@ -36,7 +36,30 @@ streamlit run app.py
 | Abdul Hadi Sheikh | Data Visualization |
 | Abdullah Salim Nizami | Data Engineering |
 
+## Pages
+
+| Page | Description |
+|------|-------------|
+| Home | Dataset overview, season calendar growth |
+| Evolution of Speed | Lap record trends, circuit speed scatter |
+| Dominance Dynasties | Constructor points stacked area, race-by-race breakdown |
+| Geography of Victory | Choropleth map of wins by country |
+| Advanced: Quali vs Race | Qualifying vs finish position correlation |
+| Advanced: Reliability | DNF rates by decade |
+| Advanced: Teammate Wars | Head-to-head comparison metrics |
+| Championship Battle | Race-by-race standings gap visualization |
+| Sprint Races | Sprint win trends, grid vs finish analysis |
+| THE WINNING FORMULA | Correlation heatmap, 3D strategy scatter |
+| THE UNDERDOG EFFECT | Comeback analysis, pit stop gambles |
+| THE CONSTRUCTOR'S CURSE | Team lifecycle and decline velocity |
+| THE ROOKIE PARADOX | Age vs performance learning curve |
+| THE CIRCUIT DNA | Track difficulty index, specialist heatmap |
+| THE MILLION DOLLAR LAP | Budget efficiency vs championship success |
+| THE BUTTERFLY EFFECT | Drama scores, clutch laps, fastest pit stops |
+| THE RAINBOW ROAD | Sunburst, treemap, Sankey, 3D driver galaxy |
+| THE PERFECT STORM | Perfect performances vs disasters, DNF causes |
+
 ## Sprint Timeline
 
-- **Sprint 1 (Apr 1–7):** Data pipeline, navigation, core pages
-- **Sprint 2 (Apr 8–14):** Advanced analytics, full dashboard
+- **Sprint 1 (Apr 1–7):** Data pipeline, navigation, core pages (Home, Speed, Championships)
+- **Sprint 2 (Apr 8–14):** Advanced analytics — 11 thematic pages, full filter system, final polish
