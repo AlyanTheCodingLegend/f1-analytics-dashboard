@@ -794,12 +794,12 @@ elif page == "🌈 THE RAINBOW ROAD":
 
         st.subheader("5. 🔀 The Sankey Flow: Team → Driver Wins")
         top_combos = team_driver_wins.nlargest(30, 'wins')
-        teams_list = top_combos['name_team'].unique().tolist()
-        drivers_list = top_combos['surname'].unique().tolist()
+        teams_list = top_combos['team'].unique().tolist()
+        drivers_list = top_combos['driver'].unique().tolist()
         all_nodes = teams_list + drivers_list
         node_indices = {n: i for i, n in enumerate(all_nodes)}
-        sankey_source = [node_indices[t] for t in top_combos['name_team']]
-        sankey_target = [node_indices[d] + len(teams_list) for d in top_combos['surname']]
+        sankey_source = [node_indices[t] for t in top_combos['team']]
+        sankey_target = [node_indices[d] + len(teams_list) for d in top_combos['driver']]
         sankey_values = top_combos['wins'].tolist()
         fig_sankey = go.Figure(go.Sankey(
             node=dict(pad=15, thickness=20,
